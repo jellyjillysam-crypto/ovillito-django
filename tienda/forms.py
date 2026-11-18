@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Producto
+from .models import Categoria, Producto
 
 
 class ProductoForm(forms.ModelForm):
@@ -23,6 +23,16 @@ class ProductoForm(forms.ModelForm):
     def clean_colores(self):
         colores = [c.strip().upper() for c in self.cleaned_data["colores"].split(",") if c.strip()]
         return ", ".join(colores)
+
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ["nombre", "descripcion", "orden"]
+        widgets = {
+            "descripcion": forms.Textarea(attrs={"rows": 3}),
+            "orden": forms.NumberInput(attrs={"min": 0}),
+        }
 
 
 class AgregarCarritoForm(forms.Form):

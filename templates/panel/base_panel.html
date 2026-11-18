@@ -18,6 +18,7 @@
       <p class="lateral__seccion">Contenido (CRUD)</p>
       <ul>
         <li><a href="{% url 'panel:productos' %}" {% if seccion == 'productos' %}aria-current="page"{% endif %}>{% icono 'caja' %} Productos</a></li>
+        <li><a href="{% url 'panel:categorias' %}" {% if seccion == 'categorias' %}aria-current="page"{% endif %}>{% icono 'caja' %} Categorías</a></li>
         <li><a href="{% url 'panel:blog' %}" {% if seccion == 'blog' %}aria-current="page"{% endif %}>{% icono 'libro' %} Blog</a></li>
         <li><a href="{% url 'panel:videos' %}" {% if seccion == 'videos' %}aria-current="page"{% endif %}>{% icono 'video' %} Videos</a></li>
       </ul>

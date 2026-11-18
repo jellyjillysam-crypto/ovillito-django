@@ -12,6 +12,10 @@ urlpatterns = [
     path("productos/<int:pk>/editar/", views.ProductoEditar.as_view(), name="producto_editar"),
     path("productos/<int:pk>/eliminar/", views.ProductoEliminar.as_view(), name="producto_eliminar"),
     # CRUD del blog
+    path("categorias/", views.CategoriaLista.as_view(), name="categorias"),
+    path("categorias/nueva/", views.CategoriaCrear.as_view(), name="categoria_crear"),
+    path("categorias/<int:pk>/editar/", views.CategoriaEditar.as_view(), name="categoria_editar"),
+    path("categorias/<int:pk>/eliminar/", views.CategoriaEliminar.as_view(), name="categoria_eliminar"),
     path("blog/", views.EntradaLista.as_view(), name="blog"),
     path("blog/nueva/", views.EntradaCrear.as_view(), name="blog_crear"),
     path("blog/<int:pk>/editar/", views.EntradaEditar.as_view(), name="blog_editar"),

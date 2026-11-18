@@ -17,8 +17,10 @@ from actividades.forms import EntradaBlogForm, VideoForm
 from actividades.models import (Comentario, EntradaBlog, Foto, MensajeChat,
                                 RespuestaEncuesta, Ubicacion, Video)
 from cuentas.permisos import AdminRequeridoMixin, admin_requerido
-from tienda.forms import ProductoForm
-from tienda.models import ItemPedido, Pedido, Producto
+from django.db.models import ProtectedError
+
+from tienda.forms import CategoriaForm, ProductoForm
+from tienda.models import Categoria, ItemPedido, Pedido, Producto
 
 
 def _variacion(actual, anterior):
@@ -228,6 +230,44 @@ class ProductoEliminar(EliminarMixin, DeleteView):
     model = Producto
     seccion, titulo, lista_url = "productos", "Eliminar producto", "panel:productos"
     mensaje_eliminado = "Producto «{nombre}» eliminado."
+
+
+# --- CRUD de categorías ------------------------------------------------------
+class CategoriaLista(PanelMixin, ListView):
+    template_name = "panel/categorias_lista.html"
+    seccion, titulo = "categorias", "Categorías"
+
+    def get_queryset(self):
+        return Categoria.objects.annotate(num_productos=Count("productos"))
+
+
+class CategoriaCrear(PanelMixin, SuccessMessageMixin, CreateView):
+    model = Categoria
+    form_class = CategoriaForm
+    template_name = "panel/formulario.html"
+    seccion, titulo, lista_url = "categorias", "Nueva categoría", "panel:categorias"
+    success_message = "Categoría «%(nombre)s» creada."
+
+
+class CategoriaEditar(PanelMixin, SuccessMessageMixin, UpdateView):
+    model = Categoria
+    form_class = CategoriaForm
+    template_name = "panel/formulario.html"
+    seccion, titulo, lista_url = "categorias", "Editar categoría", "panel:categorias"
+    success_message = "Categoría «%(nombre)s» actualizada."
+
+
+class CategoriaEliminar(EliminarMixin, DeleteView):
+    model = Categoria
+    seccion, titulo, lista_url = "categorias", "Eliminar categoría", "panel:categorias"
+    mensaje_eliminado = "Categoría «{nombre}» eliminada."
+
+    def form_valid(self, form):
+        try:
+            return super().form_valid(form)
+        except ProtectedError:
+            messages.error(self.request, "No se puede eliminar: tiene productos. Mueve o elimina esos productos primero.")
+            return redirect("panel:categorias")
 
 
 # --- CRUD del blog -----------------------------------------------------------

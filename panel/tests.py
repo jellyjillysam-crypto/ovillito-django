@@ -57,3 +57,24 @@ class DashboardTests(TestCase):
                        "actividades:blog", "actividades:chat", "actividades:videos", "actividades:encuesta",
                        "actividades:fotos"]:
             self.assertEqual(self.client.get(reverse(nombre)).status_code, 200, nombre)
+
+
+class CategoriasPanelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        from django.contrib.auth.models import User
+        cls.admin = User.objects.create_user("adm", password="x", is_staff=True)
+        cls.cliente = User.objects.create_user("cli", password="x")
+
+    def test_admin_crea_categoria(self):
+        from django.urls import reverse
+        from tienda.models import Categoria
+        self.client.force_login(self.admin)
+        r = self.client.post(reverse("panel:categoria_crear"), {"nombre": "Llaveros", "descripcion": "", "orden": 1})
+        self.assertRedirects(r, reverse("panel:categorias"))
+        self.assertTrue(Categoria.objects.filter(nombre="Llaveros").exists())
+
+    def test_cliente_no_accede(self):
+        from django.urls import reverse
+        self.client.force_login(self.cliente)
+        self.assertEqual(self.client.get(reverse("panel:categorias")).status_code, 403)

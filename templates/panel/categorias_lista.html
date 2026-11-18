@@ -1,0 +1,28 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Categorías{% endblock %}
+{% block bajada %}<p>Las categorías organizan el catálogo. Créalas aquí y luego asígnalas al crear un producto.</p>{% endblock %}
+{% block acciones %}<a class="boton boton--s" href="{% url 'panel:categoria_crear' %}">{% icono 'mas' 'icono--s' %} Nueva categoría</a>{% endblock %}
+{% block contenido %}
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Categoría</th><th>Descripción</th><th class="num">Productos</th><th class="num">Orden</th><th class="num">Acciones</th></tr></thead>
+    <tbody>
+      {% for c in object_list %}
+      <tr>
+        <td><strong>{{ c.nombre }}</strong></td>
+        <td>{{ c.descripcion|default:"—"|truncatechars:70 }}</td>
+        <td class="num">{{ c.num_productos }}</td>
+        <td class="num">{{ c.orden }}</td>
+        <td><div class="tabla__acciones">
+          <a class="boton-icono" href="{% url 'panel:categoria_editar' c.pk %}" aria-label="Editar {{ c.nombre }}" title="Editar">{% icono 'editar' %}</a>
+          <a class="boton-icono" href="{% url 'panel:categoria_eliminar' c.pk %}" aria-label="Eliminar {{ c.nombre }}" title="Eliminar" style="color:var(--error)">{% icono 'basura' %}</a>
+        </div></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:2rem">Aún no hay categorías.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
