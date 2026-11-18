@@ -40,6 +40,11 @@ if _render_host:
     CSRF_TRUSTED_ORIGINS = [f"https://{_render_host}"]
 
 
+# OpenStreetMap bloquea los mosaicos del mapa si el navegador no envía el Referer.
+# El valor por defecto de Django (same-origin) lo oculta, por eso se cambia.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
+
 # --- Aplicaciones ----------------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",

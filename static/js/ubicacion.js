@@ -8,7 +8,7 @@
   const estado = $("[data-estado] span");
 
   const mapa = L.map("mapa", { scrollWheelZoom: false }).setView([tienda.lat, tienda.lng], 14);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);

@@ -264,7 +264,7 @@
     const tienda = window.OVILLITO_TIENDA;
     const puntos = JSON.parse(fuenteMapa.textContent).puntos;
     const mapa = L.map(contenedorMapa, { scrollWheelZoom: false }).setView([tienda.lat, tienda.lng], 12);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(mapa);
