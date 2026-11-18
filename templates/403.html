@@ -1,0 +1,15 @@
+{% extends "_esqueleto.html" %}
+{% load static %}
+{% block titulo %}Acceso restringido{% endblock %}
+{% block clase_body %}acceso-body{% endblock %}
+{% block cuerpo %}
+<main class="acceso">
+  <div class="tarjeta confirmacion" style="max-width:520px">
+    <img src="{% static 'img/figuras/pulpo.svg' %}" alt="">
+    <p class="eyebrow">Error 403</p>
+    <h1>Esta sección es solo para administradores</h1>
+    <p class="texto-suave">Tu cuenta no tiene permiso para ver esta página.</p>
+    <a class="boton" href="{% url 'inicio' %}">Volver a mi inicio</a>
+  </div>
+</main>
+{% endblock %}

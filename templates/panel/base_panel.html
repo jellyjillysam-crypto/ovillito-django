@@ -1,0 +1,63 @@
+{% extends "_esqueleto.html" %}
+{% load static tienda_extras %}
+{% block clase_body %}panel-body{% endblock %}
+{% block cuerpo %}
+<div class="panel">
+  <aside class="lateral" id="lateral" aria-label="Menú del administrador">
+    <a class="lateral__marca" href="{% url 'panel:dashboard' %}">
+      <img src="{% static 'img/isotipo.svg' %}" alt="">
+      <span><strong>{{ MARCA.nombre }}</strong><small>Administración</small></span>
+    </a>
+    <nav>
+      <p class="lateral__seccion">General</p>
+      <ul>
+        <li><a href="{% url 'panel:dashboard' %}" {% if seccion == 'dashboard' %}aria-current="page"{% endif %}>{% icono 'grafica' %} Métricas</a></li>
+        <li><a href="{% url 'panel:pedidos' %}" {% if seccion == 'pedidos' %}aria-current="page"{% endif %}>{% icono 'recibo' %} Pedidos</a></li>
+        <li><a href="{% url 'panel:clientes' %}" {% if seccion == 'clientes' %}aria-current="page"{% endif %}>{% icono 'usuarios' %} Clientes</a></li>
+      </ul>
+      <p class="lateral__seccion">Contenido (CRUD)</p>
+      <ul>
+        <li><a href="{% url 'panel:productos' %}" {% if seccion == 'productos' %}aria-current="page"{% endif %}>{% icono 'caja' %} Productos</a></li>
+        <li><a href="{% url 'panel:blog' %}" {% if seccion == 'blog' %}aria-current="page"{% endif %}>{% icono 'libro' %} Blog</a></li>
+        <li><a href="{% url 'panel:videos' %}" {% if seccion == 'videos' %}aria-current="page"{% endif %}>{% icono 'video' %} Videos</a></li>
+      </ul>
+      <p class="lateral__seccion">Comunidad</p>
+      <ul>
+        <li><a href="{% url 'panel:encuestas' %}" {% if seccion == 'encuestas' %}aria-current="page"{% endif %}>{% icono 'encuesta' %} Encuestas</a></li>
+        <li><a href="{% url 'panel:ubicaciones' %}" {% if seccion == 'ubicaciones' %}aria-current="page"{% endif %}>{% icono 'pin' %} Ubicaciones</a></li>
+        <li><a href="{% url 'actividades:chat' %}">{% icono 'chat' %} Chat</a></li>
+        <li><a href="{% url 'actividades:fotos' %}">{% icono 'camara' %} Fotos</a></li>
+      </ul>
+      <p class="lateral__seccion">Atajos</p>
+      <ul>
+        <li><a href="{% url 'tienda:home' %}">{% icono 'tienda' %} Ver tienda</a></li>
+        <li><a href="{% url 'identidad' %}">{% icono 'paleta' %} Identidad de marca</a></li>
+        <li><a href="{% url 'admin:index' %}">{% icono 'admin' %} Django admin</a></li>
+      </ul>
+    </nav>
+    <div class="lateral__usuario">
+      <strong>{{ user.get_full_name|default:user.username }}</strong>
+      <span style="opacity:.7">Administrador</span>
+      <form method="post" action="{% url 'cuentas:salir' %}" style="margin-top:.5rem">{% csrf_token %}
+        <button class="boton boton--s boton--crema" type="submit">{% icono 'salir' 'icono--s' %} Salir</button>
+      </form>
+    </div>
+  </aside>
+  <div class="velo" data-velo-panel></div>
+
+  <main class="panel__contenido" id="contenido">
+    <div class="panel__barra">
+      <div style="display:flex;gap:.6rem;align-items:center">
+        <button class="boton-icono panel__menu-movil" type="button" data-alternar="lateral" aria-controls="lateral" aria-expanded="false" aria-label="Abrir menú">{% icono 'menu' %}</button>
+        <div>
+          <h1>{% block encabezado %}{{ titulo }}{% endblock %}</h1>
+          {% block bajada %}{% endblock %}
+        </div>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">{% block acciones %}{% endblock %}</div>
+    </div>
+    {% include "includes/mensajes.html" %}
+    {% block contenido %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

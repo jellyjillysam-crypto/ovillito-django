@@ -1,0 +1,27 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Encuestas{% endblock %}
+{% block encabezado %}Respuestas de la encuesta{% endblock %}
+{% block bajada %}<p>{{ respuestas|length }} respuesta{{ respuestas|length|pluralize }} · promedio {{ promedio|floatformat:1 }} / 5. Los gráficos están en <a href="{% url 'panel:dashboard' %}">Métricas</a>.</p>{% endblock %}
+{% block contenido %}
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Cliente</th><th class="num">Calificación</th><th>Categoría favorita</th><th>Canal</th><th>¿Recomendaría?</th><th>Comentario</th><th>Fecha</th></tr></thead>
+    <tbody>
+      {% for r in respuestas %}
+      <tr>
+        <td><strong>{{ r.usuario.get_full_name|default:r.usuario.username }}</strong></td>
+        <td class="num">{{ r.calificacion }} / 5</td>
+        <td>{{ r.categoria_favorita|default:"—" }}</td>
+        <td>{{ r.get_canal_display }}</td>
+        <td><span class="insignia {% if r.recomendaria == 'si' %}insignia--verde{% elif r.recomendaria == 'no' %}insignia--rosa{% endif %}">{{ r.get_recomendaria_display }}</span></td>
+        <td style="min-width:220px">{{ r.comentario|default:"—" }}</td>
+        <td>{{ r.creada|date:"d/m/Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;padding:2rem">Aún no hay respuestas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

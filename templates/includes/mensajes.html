@@ -1,0 +1,10 @@
+{% load tienda_extras %}{% if messages %}
+<ul class="mensajes" role="status">
+  {% for m in messages %}
+  <li class="mensaje mensaje--{{ m.tags|default:'info' }}">
+    {% if m.tags == 'exito' %}{% icono 'check' %}{% elif m.tags == 'error' %}{% icono 'cerrar' %}{% else %}{% icono 'corazon' %}{% endif %}
+    <span>{{ m }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

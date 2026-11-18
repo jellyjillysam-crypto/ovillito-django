@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ MARCA.descripcion }} {{ MARCA.slogan }}">
+  <meta name="theme-color" content="#4A2812">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block titulo %}{{ MARCA.nombre }}{% endblock %} · {{ MARCA.nombre }}</title>
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+  <link rel="preload" href="{% static 'fonts/fraunces-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/nunito-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  {% block css_extra %}{% endblock %}
+  <link rel="stylesheet" href="{% static 'css/ovillito.css' %}">
+</head>
+<body class="{% block clase_body %}{% endblock %}">
+  {% include "includes/iconos.html" %}
+  {% block cuerpo %}{% endblock %}
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="{% static 'js/ovillito.js' %}"></script>
+  {% block js_extra %}{% endblock %}
+</body>
+</html>

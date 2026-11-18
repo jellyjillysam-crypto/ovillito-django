@@ -1,0 +1,26 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Clientes{% endblock %}
+{% block encabezado %}Clientes{% endblock %}
+{% block bajada %}<p>{{ clientes|length }} cliente{{ clientes|length|pluralize }} registrado{{ clientes|length|pluralize }}.</p>{% endblock %}
+{% block contenido %}
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Cliente</th><th>Usuario</th><th>Correo</th><th>Registro</th><th class="num">Pedidos</th><th class="num">Total comprado</th></tr></thead>
+    <tbody>
+      {% for c in clientes %}
+      <tr>
+        <td><div class="tabla__producto" style="min-width:0"><span class="avatar" aria-hidden="true">{{ c.first_name|default:c.username|first|upper }}</span><strong>{{ c.get_full_name|default:"—" }}</strong></div></td>
+        <td>{{ c.username }}</td>
+        <td>{{ c.email|default:"—" }}</td>
+        <td>{{ c.date_joined|date:"d/m/Y" }}</td>
+        <td class="num">{{ c.num_pedidos }}</td>
+        <td class="num"><strong>{{ c.gastado|pesos }}</strong></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:2rem">Aún no hay clientes.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

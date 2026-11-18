@@ -1,0 +1,30 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Blog{% endblock %}
+{% block bajada %}<p>Administra las entradas del blog y revisa la conversación de la comunidad.</p>{% endblock %}
+{% block acciones %}<a class="boton boton--s" href="{% url 'panel:blog_crear' %}">{% icono 'mas' 'icono--s' %} Nueva entrada</a>{% endblock %}
+{% block contenido %}
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Entrada</th><th>Autor</th><th>Fecha</th><th class="num">Comentarios</th><th>Estado</th><th class="num">Acciones</th></tr></thead>
+    <tbody>
+      {% for e in object_list %}
+      <tr>
+        <td><div class="tabla__producto"><img src="{{ e.imagen_url }}" alt=""><strong>{{ e.titulo }}</strong></div></td>
+        <td>{{ e.autor.first_name|default:e.autor.username|default:"—" }}</td>
+        <td>{{ e.creada|date:"d/m/Y" }}</td>
+        <td class="num">{{ e.num_comentarios }}</td>
+        <td>{% if e.publicada %}<span class="insignia insignia--verde">Publicada</span>{% else %}<span class="insignia">Borrador</span>{% endif %}</td>
+        <td><div class="tabla__acciones">
+          <a class="boton-icono" href="{{ e.get_absolute_url }}" aria-label="Ver {{ e.titulo }}" title="Ver">{% icono 'ojo' %}</a>
+          <a class="boton-icono" href="{% url 'panel:blog_editar' e.pk %}" aria-label="Editar {{ e.titulo }}" title="Editar">{% icono 'editar' %}</a>
+          <a class="boton-icono" href="{% url 'panel:blog_eliminar' e.pk %}" aria-label="Eliminar {{ e.titulo }}" title="Eliminar" style="color:var(--error)">{% icono 'basura' %}</a>
+        </div></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:2rem">Aún no hay entradas.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

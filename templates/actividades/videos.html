@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load tienda_extras %}
+{% block titulo %}Videos{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-celeste">
+  <div>
+    <p class="eyebrow">Videos</p>
+    <h1>Aprende a tejer con nosotras</h1>
+    <p>Tutoriales paso a paso y videos de la marca. ¿Eres principiante? Empieza por los videos con la etiqueta verde.</p>
+  </div>
+  <img src="{% figura 'kit' %}" alt="">
+</div>
+
+<div class="chips" style="margin:0 0 1.4rem">
+  <a class="chip" href="{% url 'actividades:videos' %}" {% if not nivel %}style="background:var(--mantequilla);border-color:var(--chocolate)"{% endif %}>Todos</a>
+  {% for clave, etiqueta in niveles %}
+  <a class="chip" href="?nivel={{ clave }}" {% if nivel == clave %}style="background:var(--mantequilla);border-color:var(--chocolate)"{% endif %}>{{ etiqueta }}</a>
+  {% endfor %}
+  {% if es_admin %}<a class="chip" href="{% url 'panel:video_crear' %}">{% icono 'mas' 'icono--s' %} Agregar video</a>{% endif %}
+</div>
+
+<div class="videos">
+  {% for v in videos %}
+  <article class="video">
+    <div class="video__marco">
+      {% if v.youtube_id %}
+        <iframe src="https://www.youtube-nocookie.com/embed/{{ v.youtube_id }}" title="{{ v.titulo }}" loading="lazy"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      {% elif v.archivo %}
+        <video controls preload="metadata" playsinline src="{{ v.archivo.url }}" {% if v.portada %}poster="{{ v.portada.url }}"{% endif %} aria-label="{{ v.titulo }}"></video>
+      {% endif %}
+    </div>
+    <div class="video__cuerpo">
+      <div class="video__meta">
+        <span class="insignia {% if v.nivel == 'principiante' %}insignia--verde{% elif v.nivel == 'intermedio' %}insignia--amarilla{% elif v.nivel == 'avanzado' %}insignia--rosa{% else %}insignia--celeste{% endif %}">{{ v.get_nivel_display }}</span>
+        {% if v.duracion %}<span class="texto-mini">{% icono 'reloj' 'icono--s' %} {{ v.duracion }}</span>{% endif %}
+        <span class="texto-mini">{% if v.youtube_id %}YouTube{% else %}Video del taller{% endif %}</span>
+      </div>
+      <h3>{{ v.titulo }}</h3>
+      {% if v.descripcion %}<p class="texto-suave" style="margin:0">{{ v.descripcion }}</p>{% endif %}
+      {% if es_admin %}
+      <div style="display:flex;gap:.4rem;margin-top:.4rem">
+        <a class="boton boton--s boton--contorno" href="{% url 'panel:video_editar' v.pk %}">{% icono 'editar' 'icono--s' %} Editar</a>
+        <a class="boton boton--s boton--peligro" href="{% url 'panel:video_eliminar' v.pk %}">{% icono 'basura' 'icono--s' %} Eliminar</a>
+      </div>
+      {% endif %}
+    </div>
+  </article>
+  {% empty %}
+  <div class="vacio" style="grid-column:1/-1">
+    <img src="{% figura 'kit' %}" alt="">
+    <h2>No hay videos en esta categoría</h2>
+    <a class="boton" href="{% url 'actividades:videos' %}">Ver todos</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Videos{% endblock %}
+{% block bajada %}<p>Agrega tutoriales de YouTube (pegando el enlace) o sube videos propios.</p>{% endblock %}
+{% block acciones %}<a class="boton boton--s" href="{% url 'panel:video_crear' %}">{% icono 'mas' 'icono--s' %} Nuevo video</a>{% endblock %}
+{% block contenido %}
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Video</th><th>Nivel</th><th>Fuente</th><th>Duración</th><th>Fecha</th><th class="num">Acciones</th></tr></thead>
+    <tbody>
+      {% for v in object_list %}
+      <tr>
+        <td><strong>{{ v.titulo }}</strong></td>
+        <td><span class="insignia">{{ v.get_nivel_display }}</span></td>
+        <td>{% if v.youtube_id %}YouTube · <code>{{ v.youtube_id }}</code>{% else %}Archivo local{% endif %}</td>
+        <td>{{ v.duracion|default:"—" }}</td>
+        <td>{{ v.creado|date:"d/m/Y" }}</td>
+        <td><div class="tabla__acciones">
+          <a class="boton-icono" href="{% url 'actividades:videos' %}" aria-label="Ver videos" title="Ver">{% icono 'ojo' %}</a>
+          <a class="boton-icono" href="{% url 'panel:video_editar' v.pk %}" aria-label="Editar {{ v.titulo }}" title="Editar">{% icono 'editar' %}</a>
+          <a class="boton-icono" href="{% url 'panel:video_eliminar' v.pk %}" aria-label="Eliminar {{ v.titulo }}" title="Eliminar" style="color:var(--error)">{% icono 'basura' %}</a>
+        </div></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:2rem">Aún no hay videos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

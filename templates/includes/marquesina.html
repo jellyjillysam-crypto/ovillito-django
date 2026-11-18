@@ -1,0 +1,14 @@
+{% load static tienda_extras %}
+<div class="anuncios" aria-label="Anuncios">
+  <div class="anuncios__pista">
+    {% for grupo in "12" %}
+    <div class="anuncios__grupo" {% if forloop.last %}aria-hidden="true"{% endif %}>
+      <span><img src="{% static 'img/isotipo.svg' %}" alt="">Envío gratis en pedidos desde {{ TIENDA.envio_gratis_desde|pesos }}</span>
+      <span><img src="{% static 'img/isotipo.svg' %}" alt="">Cada pieza es tejida a mano y es única</span>
+      <span><img src="{% static 'img/isotipo.svg' %}" alt="">{{ MARCA.slogan }}</span>
+      <span><img src="{% static 'img/isotipo.svg' %}" alt="">Visita nuestro taller · {{ TIENDA.horario }}</span>
+      <span><img src="{% static 'img/isotipo.svg' %}" alt="">Pedidos personalizados por el chat de la comunidad</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>

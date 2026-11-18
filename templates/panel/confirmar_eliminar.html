@@ -1,0 +1,19 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block contenido %}
+<form class="tarjeta formulario-panel" method="post" style="max-width:560px">
+  {% csrf_token %}
+  <div style="display:flex;gap:1rem;align-items:center">
+    <img src="{% figura 'pulpo' %}" alt="" style="width:110px">
+    <div>
+      <h2 style="margin:0 0 .3rem">¿Eliminar «{{ object }}»?</h2>
+      <p class="texto-suave" style="margin:0">Esta acción no se puede deshacer.</p>
+    </div>
+  </div>
+  <div class="acciones-form" style="margin-top:1.4rem">
+    <button class="boton boton--peligro" type="submit">{% icono 'basura' %} Sí, eliminar</button>
+    <a class="boton boton--contorno" href="{{ volver_url }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

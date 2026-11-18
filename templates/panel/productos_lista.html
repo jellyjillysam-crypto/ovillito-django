@@ -1,0 +1,43 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Productos{% endblock %}
+{% block bajada %}<p>Crea, consulta, edita y elimina los productos de la tienda.</p>{% endblock %}
+{% block acciones %}<a class="boton boton--s" href="{% url 'panel:producto_crear' %}">{% icono 'mas' 'icono--s' %} Nuevo producto</a>{% endblock %}
+{% block contenido %}
+<form class="buscador-panel" method="get" role="search" style="margin-bottom:1rem">
+  <label class="sr-only" for="q">Buscar productos</label>
+  <input type="search" id="q" name="q" value="{{ q }}" placeholder="Buscar por nombre o categoría">
+  <button class="boton boton--s" type="submit">{% icono 'buscar' 'icono--s' %}</button>
+</form>
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Producto</th><th>Categoría</th><th class="num">Precio</th><th class="num">Stock</th><th class="num">Vendidos</th><th>Estado</th><th class="num">Acciones</th></tr></thead>
+    <tbody>
+      {% for p in object_list %}
+      <tr>
+        <td><div class="tabla__producto"><img src="{{ p.imagen_url }}" alt=""><div><strong>{{ p.nombre }}</strong>{% if p.destacado %}<br><span class="insignia insignia--amarilla">Destacado</span>{% endif %}</div></div></td>
+        <td>{{ p.categoria }}</td>
+        <td class="num">{{ p.precio|pesos }}</td>
+        <td class="num">{% if p.stock == 0 %}<span class="insignia insignia--choco">0</span>{% elif p.stock_bajo %}<span class="insignia insignia--rosa">{{ p.stock }}</span>{% else %}{{ p.stock }}{% endif %}</td>
+        <td class="num">{{ p.unidades_vendidas }}</td>
+        <td>{% if p.activo %}<span class="insignia insignia--verde">Visible</span>{% else %}<span class="insignia">Oculto</span>{% endif %}</td>
+        <td><div class="tabla__acciones">
+          <a class="boton-icono" href="{{ p.get_absolute_url }}" title="Ver en la tienda" aria-label="Ver {{ p.nombre }} en la tienda">{% icono 'ojo' %}</a>
+          <a class="boton-icono" href="{% url 'panel:producto_editar' p.pk %}" title="Editar" aria-label="Editar {{ p.nombre }}">{% icono 'editar' %}</a>
+          <a class="boton-icono" href="{% url 'panel:producto_eliminar' p.pk %}" title="Eliminar" aria-label="Eliminar {{ p.nombre }}" style="color:var(--error)">{% icono 'basura' %}</a>
+        </div></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="text-align:center;padding:2rem">No hay productos{% if q %} que coincidan con «{{ q }}»{% endif %}.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if is_paginated %}
+<nav class="paginacion" aria-label="Paginación">
+  {% if page_obj.has_previous %}<a class="boton boton--s boton--contorno" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">Anterior</a>{% endif %}
+  <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+  {% if page_obj.has_next %}<a class="boton boton--s boton--contorno" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q|urlencode }}{% endif %}">Siguiente</a>{% endif %}
+</nav>
+{% endif %}
+{% endblock %}

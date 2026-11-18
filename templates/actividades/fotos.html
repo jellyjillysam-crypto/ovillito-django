@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Fotos{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-durazno">
+  <div>
+    <p class="eyebrow">Toma fotos</p>
+    <h1>Muéstranos tus tejidos</h1>
+    <p>Usa la cámara de tu dispositivo para fotografiar tus creaciones o tus compras {{ MARCA.nombre }} y guárdalas en tu galería.</p>
+  </div>
+  <img src="{% figura 'conejo' %}" alt="">
+</div>
+
+<div class="dos-columnas" data-camara-app data-url-subir="{% url 'actividades:foto_subir' %}" data-url-eliminar="{% url 'actividades:foto_eliminar' 0 %}">
+  <section class="tarjeta">
+    <h2 class="tarjeta__titulo">{% icono 'camara' %} Cámara</h2>
+    <div class="camara">
+      <video data-video playsinline muted hidden></video>
+      <canvas data-lienzo hidden></canvas>
+      <div class="camara__flash" data-flash></div>
+      <div class="camara__aviso" data-aviso>
+        <img src="{% figura 'kit' %}" alt="">
+        <strong>La cámara está apagada</strong>
+        <span class="texto-mini" style="color:var(--mantequilla-3)">Pulsa «Activar cámara». Tu navegador te pedirá permiso.</span>
+      </div>
+    </div>
+    <div class="camara__controles">
+      <button class="boton" type="button" data-activar>{% icono 'camara' %} Activar cámara</button>
+      <button class="boton boton--verde" type="button" data-capturar disabled>{% icono 'objetivo' %} Tomar foto</button>
+      <button class="boton boton--contorno" type="button" data-cambiar hidden>{% icono 'girar' %} Cambiar cámara</button>
+      <button class="boton boton--contorno" type="button" data-repetir hidden>{% icono 'girar' %} Repetir</button>
+    </div>
+
+    <form class="tarjeta" style="margin-top:1rem;background:var(--crema)" data-form-foto method="post" action="{% url 'actividades:foto_subir' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="campo">
+        <label for="{{ form.descripcion.id_for_label }}">Descripción (opcional)</label>
+        {{ form.descripcion }}
+      </div>
+      <div class="campo">
+        <label for="{{ form.imagen.id_for_label }}">¿Sin cámara? Sube una foto desde tu dispositivo</label>
+        <input type="file" name="imagen" id="{{ form.imagen.id_for_label }}" accept="image/*" capture="environment" data-archivo>
+        <span class="campo__ayuda">JPG o PNG de máximo {{ limite_mb }} MB.</span>
+      </div>
+      <button class="boton boton--bloque" type="submit" data-guardar>{% icono 'subir' %} Guardar foto</button>
+      <p class="texto-mini" data-estado-foto role="status" style="margin:.6rem 0 0"></p>
+    </form>
+  </section>
+
+  <section>
+    <div class="seccion__cabecera" style="margin-bottom:1rem">
+      <h2 style="margin:0">{% if es_admin %}Fotos de la comunidad{% else %}Mi galería{% endif %}</h2>
+      <span class="insignia" data-total-fotos>{{ galeria|length }} foto{{ galeria|length|pluralize }}</span>
+    </div>
+    <div class="galeria" data-galeria>
+      {% for f in galeria %}
+      <figure class="foto" data-foto="{{ f.pk }}">
+        <img src="{{ f.imagen.url }}" alt="{{ f.descripcion|default:'Foto de tejido' }}" loading="lazy">
+        <figcaption>
+          {% if f.descripcion %}<strong>{{ f.descripcion }}</strong>{% endif %}
+          <div class="foto__pie">
+            <span class="texto-mini">{% if es_admin %}{{ f.usuario.first_name|default:f.usuario.username }} · {% endif %}{{ f.creada|date:"d/m/Y H:i" }}</span>
+            <form method="post" action="{% url 'actividades:foto_eliminar' f.pk %}" data-eliminar-foto>{% csrf_token %}<button class="eliminar" type="submit">Eliminar</button></form>
+          </div>
+        </figcaption>
+      </figure>
+      {% endfor %}
+    </div>
+    <div class="vacio" data-galeria-vacia {% if galeria %}hidden{% endif %}>
+      <img src="{% figura 'conejo' %}" alt="">
+      <h3>Tu galería está vacía</h3>
+      <p class="texto-suave" style="margin:0">Toma tu primera foto con la cámara.</p>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block js_extra %}<script src="{% static 'js/camara.js' %}"></script>{% endblock %}

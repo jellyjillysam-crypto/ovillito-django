@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load tienda_extras %}
+{% block titulo %}{{ entrada.titulo }}{% endblock %}
+{% block contenido %}
+<nav class="migas" aria-label="Ruta"><a href="{% url 'actividades:blog' %}">Blog</a> / {{ entrada.titulo }}</nav>
+<article>
+  <div class="articulo__portada"><img src="{{ entrada.imagen_url }}" alt=""></div>
+  <div class="dos-columnas">
+    <div>
+      <p class="eyebrow">{{ entrada.creada|date:"d \d\e F, Y" }} · por {{ entrada.autor.first_name|default:entrada.autor.username|default:"Ovillito" }}</p>
+      <h1>{{ entrada.titulo }}</h1>
+      {% if es_admin %}
+      <p style="display:flex;gap:.5rem">
+        <a class="boton boton--s boton--contorno" href="{% url 'panel:blog_editar' entrada.pk %}">{% icono 'editar' %} Editar</a>
+        <a class="boton boton--s boton--peligro" href="{% url 'panel:blog_eliminar' entrada.pk %}">{% icono 'basura' %} Eliminar</a>
+      </p>
+      {% endif %}
+      <div class="articulo__contenido">{{ entrada.contenido|linebreaks }}</div>
+
+      <section class="tarjeta" id="comentarios" style="margin-top:2rem">
+        <h2 class="tarjeta__titulo">{% icono 'chat' %} Conversación ({{ comentarios|length }})</h2>
+        {% for c in comentarios %}
+        <div class="comentario" id="comentario-{{ c.pk }}">
+          <span class="avatar{% if c.usuario.is_staff %} avatar--admin{% endif %}" aria-hidden="true">{{ c.usuario.first_name|default:c.usuario.username|first|upper }}</span>
+          <div>
+            <div class="comentario__meta">
+              <strong>{{ c.usuario.first_name|default:c.usuario.username }}</strong>
+              {% if c.usuario.is_staff %}<span class="insignia insignia--verde">Equipo {{ MARCA.nombre }}</span>{% endif %}
+              <span>{{ c.creado|timesince }}</span>
+              {% if c.usuario == user or es_admin %}
+              <form method="post" action="{% url 'actividades:comentario_eliminar' c.pk %}" style="display:inline">{% csrf_token %}<button class="eliminar" type="submit">Eliminar</button></form>
+              {% endif %}
+            </div>
+            <p>{{ c.texto }}</p>
+          </div>
+        </div>
+        {% empty %}
+        <p class="texto-suave">Sé la primera persona en comentar.</p>
+        {% endfor %}
+        <form method="post" style="margin-top:1rem" novalidate>
+          {% csrf_token %}
+          {% include "includes/campo.html" with campo=form.texto %}
+          <button class="boton" type="submit">{% icono 'enviar' %} Publicar comentario</button>
+        </form>
+      </section>
+    </div>
+
+    <aside>
+      <div class="tarjeta fondo-mantequilla">
+        <h2 class="tarjeta__titulo">{% icono 'chat' %} ¿Prefieres conversar en vivo?</h2>
+        <p>En el chat de la comunidad respondemos dudas y tomamos pedidos personalizados.</p>
+        <a class="boton boton--crema" href="{% url 'actividades:chat' %}">Ir al chat {% icono 'flecha' %}</a>
+      </div>
+      {% if otras %}
+      <div class="tarjeta">
+        <h2 class="tarjeta__titulo">Otras historias</h2>
+        <ul class="lista-panel">
+          {% for o in otras %}
+          <li><img src="{{ o.imagen_url }}" alt=""><div class="lista-panel__texto"><a href="{{ o.get_absolute_url }}"><strong>{{ o.titulo }}</strong></a><span>{{ o.creada|date:"d/m/Y" }}</span></div></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </aside>
+  </div>
+</article>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Nuestra marca{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-mantequilla">
+  <div>
+    <p class="eyebrow">Identidad corporativa</p>
+    <h1>Así es {{ MARCA.nombre }}</h1>
+    <p>{{ MARCA.descripcion }} Nuestra identidad mezcla la calidez de un chocolate caliente con la ternura de un amigurumi recién tejido.</p>
+  </div>
+  <img src="{% static 'img/isotipo.svg' %}" alt="Isotipo de {{ MARCA.nombre }}">
+</div>
+
+<section class="seccion" style="padding-top:0" aria-labelledby="t-logo">
+  <div class="seccion__cabecera"><div><p class="eyebrow">01 · Logotipo e imagotipo</p><h2 id="t-logo">Un ovillo con orejitas de oso</h2></div></div>
+  <div class="marca-hero">
+    <figure class="marca-logo tarjeta" style="margin:0">
+      <div class="marca-logo__muestra"><img src="{% static 'img/isotipo.svg' %}" alt=""></div>
+      <figcaption><strong>Isotipo</strong><br><span class="texto-mini">Ovillo de lana con carita y orejas de oso: el símbolo de la marca.</span></figcaption>
+    </figure>
+    <figure class="marca-logo tarjeta" style="margin:0">
+      <div class="marca-logo__muestra"><span class="logo__texto" style="font-size:3rem">{{ MARCA.nombre }}</span></div>
+      <figcaption><strong>Logotipo</strong><br><span class="texto-mini">Nombre escrito en Fraunces Bold, color chocolate.</span></figcaption>
+    </figure>
+    <figure class="marca-logo marca-logo--oscuro" style="margin:0">
+      <div class="marca-logo__muestra"><img src="{% static 'img/isotipo.svg' %}" alt="" style="width:70px"><span class="logo__texto" style="font-size:2.4rem">{{ MARCA.nombre }}</span></div>
+      <figcaption><strong>Imagotipo</strong><br><span class="texto-mini" style="color:var(--mantequilla-2)">Isotipo + logotipo. Versión sobre fondo oscuro.</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="t-paleta">
+  <div class="seccion__cabecera"><div><p class="eyebrow">02 · Paleta de colores</p><h2 id="t-paleta">Colores que abrazan</h2></div></div>
+  <div class="paleta">
+    {% for c in paleta %}
+    <div class="color">
+      <div class="color__muestra color__muestra--{{ c.texto }}" style="background: {{ c.hex }}">{{ c.var }}</div>
+      <div class="color__info"><strong>{{ c.nombre }}</strong><code>{{ c.hex }}</code><br>{{ c.uso }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="t-slogan">
+  <div class="slogan-bloque">
+    <p class="eyebrow" id="t-slogan">03 · Slogan</p>
+    <p>«{{ MARCA.slogan }}»</p>
+    <span class="texto-suave" style="font-weight:700">Cada pieza se teje a mano durante horas: lo que recibes es, literalmente, un abrazo hecho de hilo.</span>
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="t-tipos">
+  <div class="seccion__cabecera"><div><p class="eyebrow">04 · Tipografías</p><h2 id="t-tipos">Tres voces, una personalidad</h2></div></div>
+  <div class="tipos">
+    {% for t in tipografias %}
+    <article class="tarjeta">
+      <span class="insignia insignia--amarilla">{{ t.rol }}</span>
+      <p class="tipo__muestra {{ t.clase }}">{{ t.nombre }}</p>
+      <p class="tipo__alfabeto {{ t.clase }}">Aa Bb Cc Ññ 0123456789 ¡Hola, tejedora!</p>
+      <p class="texto-suave" style="font-size:.9rem">{{ t.descripcion }}</p>
+      <p class="texto-mini" style="margin:0">{{ t.pesos }}</p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="t-ilus">
+  <div class="seccion__cabecera"><div><p class="eyebrow">05 · Ilustraciones</p><h2 id="t-ilus">Personajes y productos</h2></div>
+    <p class="texto-suave" style="max-width:46ch;margin:0">Estilo «sticker»: contorno chocolate, colores pastel y textura de punto de crochet.</p></div>
+  <div class="ilustraciones">
+    {% for clave, nombre in ilustraciones %}
+    <figure><img src="{% static 'img/productos/'|add:clave|add:'.svg' %}" alt="" loading="lazy">{{ nombre }}</figure>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="t-voz">
+  <div class="dos-columnas">
+    <div class="tarjeta">
+      <p class="eyebrow">06 · Tono de voz</p>
+      <h2 id="t-voz">Hablamos como una amiga que teje</h2>
+      <ul class="lista-simple">
+        <li><span><strong>Cálido</strong> — tuteamos y usamos palabras suaves.</span></li>
+        <li><span><strong>Artesanal</strong> — contamos el proceso detrás de cada pieza.</span></li>
+        <li><span><strong>Cercano</strong> — invitamos a la comunidad a participar.</span></li>
+      </ul>
+    </div>
+    <div class="tarjeta fondo-rosa">
+      <p class="eyebrow">Producto / servicio</p>
+      <h2>¿Qué ofrecemos?</h2>
+      <p>Amigurumis, accesorios, decoración y kits de crochet tejidos a mano, además de tutoriales y una comunidad para aprender a tejer.</p>
+      <a class="boton" href="{% url 'tienda:home' %}#catalogo">Ver productos</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

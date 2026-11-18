@@ -1,0 +1,48 @@
+{% extends "_esqueleto.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Crear cuenta{% endblock %}
+{% block clase_body %}acceso-body{% endblock %}
+{% block cuerpo %}
+{% include "includes/marquesina.html" %}
+<main class="acceso">
+  <div class="acceso__tarjeta">
+    <section class="acceso__arte" style="background:var(--rosa-suave)" aria-label="{{ MARCA.nombre }}">
+      <div>
+        <a class="acceso__marca" href="{% url 'inicio' %}">
+          <img src="{% static 'img/isotipo.svg' %}" alt="">
+          <span>{{ MARCA.nombre }}</span>
+        </a>
+        <p class="acceso__saludo">¡Únete al club!</p>
+        <p class="acceso__lema">Crea tu cuenta de cliente para comprar, comentar en el blog, chatear con la comunidad y compartir fotos de tus tejidos.</p>
+      </div>
+      <div class="acceso__figuras" aria-hidden="true">
+        <img src="{% figura 'flores' %}" alt="">
+        <img src="{% figura 'pulpo' %}" alt="">
+        <img src="{% figura 'fresa' %}" alt="">
+      </div>
+    </section>
+
+    <section class="acceso__formulario">
+      <p class="eyebrow">Cuenta de cliente</p>
+      <h1>Crea tu cuenta</h1>
+      <form method="post" novalidate style="margin-top:1rem">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <ul class="mensajes">{% for e in form.non_field_errors %}<li class="mensaje mensaje--error">{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+        <div class="formulario-grilla">
+          {% include "includes/campo.html" with campo=form.first_name %}
+          {% include "includes/campo.html" with campo=form.username %}
+        </div>
+        {% include "includes/campo.html" with campo=form.email %}
+        <div class="formulario-grilla">
+          {% include "includes/campo.html" with campo=form.password1 %}
+          {% include "includes/campo.html" with campo=form.password2 %}
+        </div>
+        <button class="boton boton--bloque" type="submit">Crear mi cuenta {% icono 'flecha' %}</button>
+      </form>
+      <p class="acceso__alterno">¿Ya tienes cuenta? <a href="{% url 'cuentas:login' %}"><strong>Inicia sesión</strong></a></p>
+    </section>
+  </div>
+</main>
+{% endblock %}

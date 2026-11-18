@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Tienda{% endblock %}
+{% block contenido %}
+
+{% if slides %}
+<section class="carrusel" data-carrusel aria-roledescription="carrusel" aria-label="Novedades de {{ MARCA.nombre }}">
+  <div class="carrusel__pista" data-pista aria-live="off">
+    {% for s in slides %}
+    <article class="slide slide--{{ s.color_fondo }}{% if forloop.first %} es-activa{% endif %}" role="group" aria-roledescription="diapositiva" aria-label="{{ forloop.counter }} de {{ slides|length }}: {{ s.titulo }}">
+      {% if s.imagen %}
+        <img class="slide__foto" src="{{ s.imagen.url }}" alt="">
+        <div class="slide__texto" style="grid-column:2">
+          <h2 class="slide__titulo">{{ s.titulo }}</h2>
+          {% if s.subtitulo %}<p class="slide__subtitulo">{{ s.subtitulo }}</p>{% endif %}
+          <a class="boton boton--crema" href="{{ s.enlace }}">{{ s.texto_boton }} {% icono 'flecha' %}</a>
+        </div>
+      {% else %}
+        <img class="slide__figura slide__figura--izq" src="{% figura s.figura_izquierda %}" alt="" width="250" height="250">
+        <div class="slide__texto">
+          <h2 class="slide__titulo">{{ s.titulo }}</h2>
+          {% if s.subtitulo %}<p class="slide__subtitulo">{{ s.subtitulo }}</p>{% endif %}
+          <a class="boton boton--crema" href="{{ s.enlace }}" {% if not forloop.first %}tabindex="-1"{% endif %}>{{ s.texto_boton }} {% icono 'flecha' %}</a>
+        </div>
+        <img class="slide__figura slide__figura--der" src="{% figura s.figura_derecha %}" alt="" width="250" height="250">
+      {% endif %}
+    </article>
+    {% endfor %}
+  </div>
+  {% if slides|length > 1 %}
+  <button class="carrusel__flecha carrusel__flecha--prev" type="button" data-prev aria-label="Diapositiva anterior">{% icono 'izq' %}</button>
+  <button class="carrusel__flecha carrusel__flecha--next" type="button" data-next aria-label="Diapositiva siguiente">{% icono 'der' %}</button>
+  <div class="carrusel__puntos" role="tablist" aria-label="Elegir diapositiva">
+    {% for s in slides %}
+    <button class="carrusel__punto" type="button" data-ir="{{ forloop.counter0 }}" aria-label="Ir a la diapositiva {{ forloop.counter }}" {% if forloop.first %}aria-current="true"{% endif %}></button>
+    {% endfor %}
+  </div>
+  <button class="boton-icono carrusel__pausa" type="button" data-pausa aria-label="Pausar carrusel">{% icono 'pausa' %}</button>
+  {% endif %}
+</section>
+{% endif %}
+
+<section id="catalogo" aria-labelledby="titulo-catalogo">
+  <h2 class="sr-only" id="titulo-catalogo">Catálogo</h2>
+  <form class="filtros" method="get" action="#catalogo" data-filtros>
+    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+    <div class="filtros__grupo">
+      <label class="sr-only" for="f-categoria">Categoría</label>
+      <select class="filtro-select{% if categoria_actual %} activo{% endif %}" id="f-categoria" name="categoria" data-autoenviar>
+        <option value="">Categoría</option>
+        {% for c in categorias %}<option value="{{ c.slug }}" {% if categoria_actual == c %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
+      </select>
+      <label class="sr-only" for="f-precio">Precio</label>
+      <select class="filtro-select{% if precio %} activo{% endif %}" id="f-precio" name="precio" data-autoenviar>
+        <option value="">Precio</option>
+        {% for clave, etiqueta in rangos %}<option value="{{ clave }}" {% if precio == clave %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+      </select>
+      <label class="sr-only" for="f-disp">Disponibilidad</label>
+      <select class="filtro-select{% if disponibilidad %} activo{% endif %}" id="f-disp" name="disponible" data-autoenviar>
+        <option value="">Disponible para enviar</option>
+        <option value="si" {% if disponibilidad == 'si' %}selected{% endif %}>Solo con stock</option>
+      </select>
+    </div>
+
+    <div class="densidad" role="group" aria-label="Tamaño de la grilla">
+      <button type="button" data-cols="4" aria-pressed="true" aria-label="4 columnas"><svg viewBox="0 0 22 14"><rect x="0" y="0" width="4" height="6" rx="1"/><rect x="6" y="0" width="4" height="6" rx="1"/><rect x="12" y="0" width="4" height="6" rx="1"/><rect x="18" y="0" width="4" height="6" rx="1"/><rect x="0" y="8" width="4" height="6" rx="1"/><rect x="6" y="8" width="4" height="6" rx="1"/><rect x="12" y="8" width="4" height="6" rx="1"/><rect x="18" y="8" width="4" height="6" rx="1"/></svg></button>
+      <button type="button" data-cols="3" aria-pressed="false" aria-label="3 columnas"><svg viewBox="0 0 22 14"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="16" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/><rect x="16" y="8" width="6" height="6" rx="1"/></svg></button>
+      <button type="button" data-cols="2" aria-pressed="false" aria-label="2 columnas"><svg viewBox="0 0 22 14"><rect x="0" y="0" width="10" height="14" rx="1.5"/><rect x="12" y="0" width="10" height="14" rx="1.5"/></svg></button>
+    </div>
+
+    <div class="filtros__grupo">
+      <label for="f-orden" class="texto-suave" style="font-weight:700">Ordenar por:</label>
+      <select class="filtro-select" id="f-orden" name="orden" data-autoenviar>
+        {% for clave, etiqueta in ordenes %}<option value="{{ clave }}" {% if orden == clave %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+      </select>
+      <span class="filtros__total">{{ productos|length }} artículo{{ productos|length|pluralize }}</span>
+      <noscript><button class="boton boton--s" type="submit">Aplicar</button></noscript>
+    </div>
+  </form>
+
+  {% if hay_filtros %}
+  <div class="chips">
+    {% if q %}<a class="chip" href="{% url_con q='' %}#catalogo">Búsqueda: «{{ q }}» {% icono 'cerrar' 'icono--s' %}</a>{% endif %}
+    {% if categoria_actual %}<a class="chip" href="{% url_con categoria='' %}#catalogo">{{ categoria_actual.nombre }} {% icono 'cerrar' 'icono--s' %}</a>{% endif %}
+    {% if precio %}<a class="chip" href="{% url_con precio='' %}#catalogo">Precio {% icono 'cerrar' 'icono--s' %}</a>{% endif %}
+    {% if disponibilidad %}<a class="chip" href="{% url_con disponible='' %}#catalogo">Con stock {% icono 'cerrar' 'icono--s' %}</a>{% endif %}
+    <a class="chip" href="{% url 'tienda:home' %}#catalogo">Limpiar filtros</a>
+  </div>
+  {% endif %}
+
+  <div class="grilla" data-grilla data-cols="4">
+    {% for p in productos %}
+      {% include "includes/tarjeta_producto.html" with destacar=True %}
+    {% empty %}
+      <div class="vacio" style="grid-column:1/-1">
+        <img src="{% figura 'pulpo' %}" alt="">
+        <h3>No encontramos tejidos con esos filtros</h3>
+        <p class="texto-suave">Prueba con otra categoría o rango de precio.</p>
+        <a class="boton" href="{% url 'tienda:home' %}#catalogo">Ver todo el catálogo</a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="seccion" aria-labelledby="titulo-comunidad">
+  <div class="seccion__cabecera">
+    <div>
+      <p class="eyebrow">Comunidad {{ MARCA.nombre }}</p>
+      <h2 id="titulo-comunidad">Más que una tienda: un club de tejido</h2>
+    </div>
+    <a class="enlace-flecha" href="{% url 'actividades:blog' %}">Leer el blog {% icono 'flecha' %}</a>
+  </div>
+  <div class="actividades">
+    <a class="actividad" href="{% url 'actividades:ubicacion' %}"><span class="actividad__icono fondo-mantequilla">{% icono 'pin' 'icono--l' %}</span><strong>¿Qué tan cerca estás?</strong><span>Comparte tu ubicación y mide la distancia al taller.</span></a>
+    <a class="actividad" href="{% url 'actividades:chat' %}"><span class="actividad__icono fondo-rosa">{% icono 'chat' 'icono--l' %}</span><strong>Chat</strong><span>Pregunta, comparte y conversa con otras tejedoras.</span></a>
+    <a class="actividad" href="{% url 'actividades:videos' %}"><span class="actividad__icono fondo-celeste">{% icono 'video' 'icono--l' %}</span><strong>Videos</strong><span>Tutoriales para aprender desde cero.</span></a>
+    <a class="actividad" href="{% url 'actividades:encuesta' %}"><span class="actividad__icono fondo-menta">{% icono 'encuesta' 'icono--l' %}</span><strong>Encuesta</strong><span>Tu opinión decide la próxima colección.</span></a>
+    <a class="actividad" href="{% url 'actividades:fotos' %}"><span class="actividad__icono fondo-durazno">{% icono 'camara' 'icono--l' %}</span><strong>Fotos</strong><span>Toma una foto de tus tejidos con la cámara.</span></a>
+  </div>
+</section>
+{% endblock %}
+{% block js_extra %}<script src="{% static 'js/carrusel.js' %}"></script>{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Chat de la comunidad{% endblock %}
+{% block contenido %}
+<div class="dos-columnas">
+  <section class="tarjeta chat" aria-labelledby="t-chat"
+           data-chat
+           data-url-mensajes="{% url 'actividades:chat_mensajes' %}"
+           data-url-enviar="{% url 'actividades:chat_enviar' %}"
+           data-url-eliminar="{% url 'actividades:chat_eliminar' 0 %}"
+           data-admin="{% if es_admin %}1{% else %}0{% endif %}">
+    <header class="chat__cabecera">
+      <img src="{% static 'img/isotipo.svg' %}" alt="">
+      <div>
+        <h2 id="t-chat">Chat de la comunidad</h2>
+        <span class="texto-mini"><span class="punto-vivo" aria-hidden="true"></span> En vivo · se actualiza cada pocos segundos</span>
+      </div>
+    </header>
+    <div class="chat__mensajes" data-lista role="log" aria-live="polite" aria-label="Mensajes"></div>
+    <form class="chat__formulario" data-form-chat>
+      <label class="sr-only" for="texto-chat">Escribe un mensaje</label>
+      <input id="texto-chat" name="texto" type="text" maxlength="500" autocomplete="off" placeholder="Escribe un mensaje para la comunidad…" required>
+      <button class="boton" type="submit" aria-label="Enviar">{% icono 'enviar' %}<span class="sr-only">Enviar</span></button>
+    </form>
+  </section>
+
+  <aside>
+    <div class="cabecera-pagina fondo-rosa" style="grid-template-columns:1fr;margin-bottom:1rem">
+      <div>
+        <p class="eyebrow">Blog · Chat</p>
+        <h1 style="font-size:1.8rem">Conversemos entre puntadas</h1>
+        <p>Comparte avances, pide ayuda con un patrón o encarga un tejido personalizado.</p>
+      </div>
+    </div>
+    <div class="tarjeta">
+      <h2 class="tarjeta__titulo">{% icono 'corazon' %} Normas de la casa</h2>
+      <ul class="lista-simple">
+        <li><span>Sé amable: aquí todas aprendimos desde la cadeneta.</span></li>
+        <li><span>No compartas datos personales sensibles.</span></li>
+        <li><span>El equipo {{ MARCA.nombre }} aparece con avatar verde.</span></li>
+      </ul>
+      <p class="texto-mini" style="margin:.8rem 0 0">{{ participantes }} persona{{ participantes|pluralize:"s" }} ha{{ participantes|pluralize:"n" }} participado en el chat.</p>
+    </div>
+    <a class="enlace-flecha" href="{% url 'actividades:blog' %}" style="margin-top:1rem">Leer el blog {% icono 'flecha' %}</a>
+  </aside>
+</div>
+{{ mensajes_iniciales|json_script:"mensajes-iniciales" }}
+{% endblock %}
+{% block js_extra %}<script src="{% static 'js/chat.js' %}"></script>{% endblock %}

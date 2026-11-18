@@ -1,0 +1,24 @@
+{% load tienda_extras %}
+<article class="producto{% if p.destacado and destacar %} producto--destacado{% endif %}">
+  <div class="producto__media">
+    <a class="producto__imagen" href="{{ p.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+      {% if not p.disponible %}<span class="etiqueta etiqueta--agotado">Agotado</span>
+      {% elif p.stock_bajo %}<span class="etiqueta etiqueta--ultimas">¡Últimas {{ p.stock }}!</span>
+      {% elif p.destacado %}<span class="etiqueta">Favorito</span>{% endif %}
+      <img src="{{ p.imagen_url }}" alt="" loading="lazy" width="400" height="400">
+    </a>
+    <button class="producto__agregar" type="button" data-agregar="{{ p.pk }}"
+            aria-label="Agregar {{ p.nombre }} al carrito" {% if not p.disponible %}disabled{% endif %}>
+      {% icono 'mas' %}
+    </button>
+  </div>
+  <div class="producto__info">
+    <h3 class="producto__nombre"><a href="{{ p.get_absolute_url }}">{{ p.nombre }}</a></h3>
+    {% with colores=p.lista_colores %}{% if colores %}
+    <ul class="swatches" aria-label="Colores disponibles">
+      {% for c in colores %}<li style="--c: {{ c }}" title="{{ c }}"></li>{% endfor %}
+    </ul>
+    {% endif %}{% endwith %}
+    <p class="producto__precio">{{ p.precio|pesos }} {{ TIENDA.moneda }}</p>
+  </div>
+</article>

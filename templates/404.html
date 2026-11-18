@@ -1,0 +1,15 @@
+{% extends "_esqueleto.html" %}
+{% load static %}
+{% block titulo %}Página no encontrada{% endblock %}
+{% block clase_body %}acceso-body{% endblock %}
+{% block cuerpo %}
+<main class="acceso">
+  <div class="tarjeta confirmacion" style="max-width:520px">
+    <img src="{% static 'img/figuras/oso.svg' %}" alt="">
+    <p class="eyebrow">Error 404</p>
+    <h1>Se nos soltó un punto</h1>
+    <p class="texto-suave">La página que buscas no existe o cambió de lugar.</p>
+    <a class="boton" href="{% url 'inicio' %}">Volver al inicio</a>
+  </div>
+</main>
+{% endblock %}

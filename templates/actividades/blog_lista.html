@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load tienda_extras %}
+{% block titulo %}Blog{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-rosa">
+  <div>
+    <p class="eyebrow">Blog de la comunidad</p>
+    <h1>Historias entre puntadas</h1>
+    <p>Consejos, novedades del taller y conversaciones con la comunidad. Comenta en cada entrada o únete al <a href="{% url 'actividades:chat' %}">chat en vivo</a>.</p>
+  </div>
+  <img src="{% figura 'flores' %}" alt="">
+</div>
+{% if es_admin %}<p><a class="boton boton--s boton--verde" href="{% url 'panel:blog_crear' %}">{% icono 'mas' %} Nueva entrada</a></p>{% endif %}
+<div class="blog-grilla">
+  {% for e in entradas %}
+  <a class="entrada" href="{{ e.get_absolute_url }}">
+    <img src="{{ e.imagen_url }}" alt="" loading="lazy">
+    <div class="entrada__cuerpo">
+      <div class="entrada__meta"><span>{{ e.creada|date:"d \d\e F, Y" }}</span><span>{% icono 'chat' 'icono--s' %} {{ e.num_comentarios }} comentario{{ e.num_comentarios|pluralize }}</span>{% if not e.publicada %}<span class="insignia">Borrador</span>{% endif %}</div>
+      <h3>{{ e.titulo }}</h3>
+      <p class="texto-suave" style="margin:0">{{ e.resumen }}</p>
+    </div>
+  </a>
+  {% empty %}
+  <div class="vacio" style="grid-column:1/-1"><h2>Pronto publicaremos nuestra primera historia</h2></div>
+  {% endfor %}
+</div>
+{% endblock %}

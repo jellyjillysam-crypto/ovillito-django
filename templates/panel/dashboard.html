@@ -1,0 +1,165 @@
+{% extends "panel/base_panel.html" %}
+{% load static tienda_extras humanize %}
+{% block titulo %}Métricas{% endblock %}
+{% block css_extra %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block encabezado %}Hola, {{ user.first_name|default:user.username }}{% endblock %}
+{% block bajada %}<p>Así va {{ MARCA.nombre }} hoy, {% now "j \d\e F" %}.</p>{% endblock %}
+{% block acciones %}
+<a class="boton boton--s boton--contorno" href="{% url 'tienda:home' %}">{% icono 'tienda' 'icono--s' %} Ver tienda</a>
+<a class="boton boton--s" href="{% url 'panel:producto_crear' %}">{% icono 'mas' 'icono--s' %} Nuevo producto</a>
+{% endblock %}
+{% block contenido %}
+
+{# --- Indicadores principales --- #}
+<section class="kpis" aria-label="Indicadores principales">
+  <div class="kpi kpi--hero">
+    <span class="kpi__etiqueta">{% icono 'grafica' 'icono--s' %} Ingresos totales</span>
+    <span class="kpi__valor">{{ kpi.ingresos|pesos }}</span>
+    <span class="kpi__delta">Últimos 7 días: <strong>{{ kpi.ingresos_7|pesos }}</strong>
+      {% if kpi.ingresos_var is not None %}
+        <span class="delta {% if kpi.ingresos_var > 0 %}delta--sube{% elif kpi.ingresos_var < 0 %}delta--baja{% else %}delta--igual{% endif %}">
+          {% if kpi.ingresos_var > 0 %}{% icono 'sube' 'icono--s' %}+{% elif kpi.ingresos_var < 0 %}{% icono 'baja' 'icono--s' %}{% endif %}{{ kpi.ingresos_var }} %</span> vs. 7 días anteriores
+      {% endif %}
+    </span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__etiqueta">{% icono 'recibo' 'icono--s' %} Pedidos</span>
+    <span class="kpi__valor">{{ kpi.pedidos|intcomma }}</span>
+    <span class="kpi__delta">{{ kpi.pedidos_7 }} esta semana
+      {% if kpi.pedidos_var is not None %}<span class="delta {% if kpi.pedidos_var > 0 %}delta--sube{% elif kpi.pedidos_var < 0 %}delta--baja{% else %}delta--igual{% endif %}">{% if kpi.pedidos_var > 0 %}+{% endif %}{{ kpi.pedidos_var }} %</span>{% endif %}
+    </span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__etiqueta">{% icono 'usuarios' 'icono--s' %} Clientes registrados</span>
+    <span class="kpi__valor">{{ kpi.clientes }}</span>
+    <span class="kpi__delta">{{ kpi.clientes_nuevos }} nuevos en 30 días</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__etiqueta">{% icono 'bolsa' 'icono--s' %} Ticket promedio</span>
+    <span class="kpi__valor">{{ kpi.ticket|pesos }}</span>
+    <span class="kpi__delta">por pedido</span>
+  </div>
+</section>
+
+<section class="kpis-mini" aria-label="Actividad de la comunidad">
+  <a class="kpi-mini" href="{% url 'panel:encuestas' %}"><span class="kpi-mini__icono fondo-mantequilla">{% icono 'estrella' %}</span><div><strong>{{ kpi.calificacion|floatformat:1 }} / 5</strong><span>Satisfacción ({{ kpi.respuestas }})</span></div></a>
+  <a class="kpi-mini" href="{% url 'panel:ubicaciones' %}"><span class="kpi-mini__icono fondo-celeste">{% icono 'pin' %}</span><div><strong>{% if kpi.distancia is not None %}{{ kpi.distancia|km }}{% else %}—{% endif %}</strong><span>Distancia promedio</span></div></a>
+  <a class="kpi-mini" href="{% url 'actividades:chat' %}"><span class="kpi-mini__icono fondo-rosa">{% icono 'chat' %}</span><div><strong>{{ actividad.mensajes }}</strong><span>Mensajes en el chat</span></div></a>
+  <a class="kpi-mini" href="{% url 'panel:blog' %}"><span class="kpi-mini__icono fondo-menta">{% icono 'libro' %}</span><div><strong>{{ actividad.comentarios }}</strong><span>Comentarios del blog</span></div></a>
+  <a class="kpi-mini" href="{% url 'actividades:fotos' %}"><span class="kpi-mini__icono fondo-durazno">{% icono 'camara' %}</span><div><strong>{{ actividad.fotos }}</strong><span>Fotos compartidas</span></div></a>
+  <a class="kpi-mini" href="{% url 'panel:productos' %}"><span class="kpi-mini__icono fondo-mantequilla">{% icono 'caja' %}</span><div><strong>{{ actividad.productos }}</strong><span>Productos activos</span></div></a>
+</section>
+
+<div class="tablero">
+  {# --- Ingresos diarios --- #}
+  <section class="grafica col-8" aria-labelledby="g-ingresos">
+    <div class="grafica__cabecera">
+      <div><h2 id="g-ingresos">Ingresos por día</h2><p>Últimos 14 días · pesos {{ TIENDA.moneda }}</p></div>
+    </div>
+    <div class="grafica__lienzo"><canvas id="grafica-ingresos" role="img" aria-label="Gráfica de líneas de ingresos diarios de los últimos 14 días. Los valores están en la tabla de abajo."></canvas></div>
+    <details class="grafica__tabla"><summary>Ver como tabla</summary>
+      <table><thead><tr><th>Día</th><th class="num">Pedidos</th><th class="num">Ingresos</th></tr></thead>
+        <tbody>{% for d in serie_dias %}<tr><td>{{ d.etiqueta }}</td><td class="num">{{ d.pedidos }}</td><td class="num">{{ d.total|pesos }}</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+
+  {# --- Unidades por categoría --- #}
+  <section class="grafica col-4" aria-labelledby="g-categorias">
+    <div class="grafica__cabecera"><div><h2 id="g-categorias">Unidades vendidas por categoría</h2><p>Desde el inicio · de mayor a menor</p></div></div>
+    <div class="grafica__lienzo"><canvas id="grafica-categorias" role="img" aria-label="Barras horizontales de unidades vendidas por categoría. Valores en la tabla."></canvas></div>
+    <details class="grafica__tabla"><summary>Ver como tabla</summary>
+      <table><thead><tr><th>Categoría</th><th class="num">Unidades</th><th class="num">Ingresos</th></tr></thead>
+        <tbody>{% for c in por_categoria %}<tr><td>{{ c.categoria }}</td><td class="num">{{ c.unidades }}</td><td class="num">{{ c.ingresos|pesos }}</td></tr>{% empty %}<tr><td colspan="3">Sin ventas aún.</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+
+  {# --- Encuesta: calificaciones --- #}
+  <section class="grafica col-4" aria-labelledby="g-calif">
+    <div class="grafica__cabecera"><div><h2 id="g-calif">Calificaciones de la encuesta</h2><p>Número de respuestas por puntaje (1 a 5)</p></div></div>
+    <div class="grafica__lienzo grafica__lienzo--bajo"><canvas id="grafica-calificaciones" role="img" aria-label="Columnas con la cantidad de respuestas por calificación. Valores en la tabla."></canvas></div>
+    <details class="grafica__tabla"><summary>Ver como tabla</summary>
+      <table><tbody>{% for c in graficas.calificaciones %}<tr><td>{{ c.etiqueta }}</td><td class="num">{{ c.valor }}</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+
+  {# --- Encuesta: canal --- #}
+  <section class="grafica col-4" aria-labelledby="g-canal">
+    <div class="grafica__cabecera"><div><h2 id="g-canal">¿Cómo nos conocieron?</h2><p>Respuestas por canal</p></div></div>
+    <div class="grafica__lienzo grafica__lienzo--bajo"><canvas id="grafica-canales" role="img" aria-label="Barras horizontales con la cantidad de respuestas por canal. Valores en la tabla."></canvas></div>
+    <details class="grafica__tabla"><summary>Ver como tabla</summary>
+      <table><tbody>{% for c in graficas.canales %}<tr><td>{{ c.etiqueta }}</td><td class="num">{{ c.valor }}</td></tr>{% empty %}<tr><td>Sin respuestas.</td></tr>{% endfor %}</tbody></table>
+    </details>
+  </section>
+
+  {# --- Encuesta: recomendaría (barra segmentada) --- #}
+  <section class="grafica col-4" aria-labelledby="g-rec">
+    <div class="grafica__cabecera"><div><h2 id="g-rec">¿Nos recomendarían?</h2><p>{{ kpi.respuestas }} respuesta{{ kpi.respuestas|pluralize }}</p></div></div>
+    {% if kpi.respuestas %}
+    <div class="segmentada" role="img" aria-label="{% for r in recomendaria %}{{ r.etiqueta }}: {{ r.porcentaje }} %{% if not forloop.last %}, {% endif %}{% endfor %}">
+      {% for r in recomendaria %}{% if r.valor %}
+      <span title="{{ r.etiqueta }}: {{ r.valor }} ({{ r.porcentaje }} %)" style="flex: {{ r.valor }} 1 0; {% if r.clave == 'si' %}background:#2A8059;color:#fff{% elif r.clave == 'talvez' %}background:#D9D0C1;color:#3B2414{% else %}background:#C9803A;color:#2B1608{% endif %}">{% if r.porcentaje >= 12 %}{{ r.porcentaje }} %{% endif %}</span>
+      {% endif %}{% endfor %}
+    </div>
+    <ul class="leyenda">
+      {% for r in recomendaria %}<li><i style="background:{% if r.clave == 'si' %}#2A8059{% elif r.clave == 'talvez' %}#D9D0C1{% else %}#C9803A{% endif %}"></i>{{ r.etiqueta }}</li>{% endfor %}
+    </ul>
+    <table class="grafica__tabla" style="width:100%;margin-top:.8rem;border-collapse:collapse">
+      <tbody>{% for r in recomendaria %}<tr><td>{{ r.etiqueta }}</td><td class="num">{{ r.valor }}</td><td class="num">{{ r.porcentaje }} %</td></tr>{% endfor %}</tbody>
+    </table>
+    {% else %}<p class="texto-suave">Aún no hay respuestas.</p>{% endif %}
+  </section>
+
+  {# --- Mapa de clientes --- #}
+  <section class="grafica col-7" aria-labelledby="g-mapa">
+    <div class="grafica__cabecera">
+      <div><h2 id="g-mapa">¿Qué tan cerca están los clientes?</h2><p>Última ubicación capturada por cada cliente · anillos de 1, 3 y 5 km</p></div>
+      <a class="enlace-flecha" href="{% url 'panel:ubicaciones' %}" style="font-size:.88rem">Detalle {% icono 'flecha' 'icono--s' %}</a>
+    </div>
+    <div class="mapa mapa--bajo" id="mapa-panel" role="region" aria-label="Mapa con la tienda y la ubicación de los clientes"></div>
+    <p class="texto-mini" style="margin:.6rem 0 0">{{ kpi.clientes_cerca }} de {{ kpi.con_ubicacion }} clientes con ubicación están a 3 km o menos del taller.</p>
+  </section>
+
+  {# --- Productos más vendidos y stock bajo --- #}
+  <section class="grafica col-5" aria-labelledby="g-top">
+    <div class="grafica__cabecera"><div><h2 id="g-top">Más vendidos</h2><p>Unidades desde el inicio</p></div></div>
+    <ul class="lista-panel">
+      {% for p in top_productos %}
+      <li><img src="{{ p.imagen_url }}" alt=""><div class="lista-panel__texto"><strong>{{ p.nombre }}</strong><span>{{ p.categoria }} · {{ p.precio|pesos }}</span></div><span class="num">{{ p.unidades_vendidas }} u.</span></li>
+      {% empty %}<li>Sin ventas todavía.</li>{% endfor %}
+    </ul>
+    <h3 style="margin:1.2rem 0 .3rem;font-size:1rem">Stock bajo (≤ 3)</h3>
+    <ul class="lista-panel">
+      {% for p in stock_bajo %}
+      <li><img src="{{ p.imagen_url }}" alt=""><div class="lista-panel__texto"><strong>{{ p.nombre }}</strong><span>{% if p.stock == 0 %}Agotado{% else %}Quedan {{ p.stock }}{% endif %}</span></div><a class="boton boton--s boton--contorno" href="{% url 'panel:producto_editar' p.pk %}">Reponer</a></li>
+      {% empty %}<li class="texto-suave">Todo el inventario está bien.</li>{% endfor %}
+    </ul>
+  </section>
+
+  {# --- Últimos pedidos --- #}
+  <section class="grafica col-12" aria-labelledby="g-pedidos">
+    <div class="grafica__cabecera"><div><h2 id="g-pedidos">Últimos pedidos</h2></div><a class="enlace-flecha" href="{% url 'panel:pedidos' %}" style="font-size:.88rem">Ver todos {% icono 'flecha' 'icono--s' %}</a></div>
+    <div class="tabla-envoltura" style="border:0">
+      <table class="tabla">
+        <thead><tr><th>Pedido</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th class="num">Total</th></tr></thead>
+        <tbody>
+          {% for p in ultimos_pedidos %}
+          <tr><td><a href="{% url 'tienda:pedido' p.pk %}"><strong>{{ p.numero }}</strong></a></td><td>{{ p.usuario.get_full_name|default:p.usuario.username }}</td><td>{{ p.creado|date:"d/m/Y H:i" }}</td><td><span class="insignia insignia--amarilla">{{ p.get_estado_display }}</span></td><td class="num"><strong>{{ p.total|pesos }}</strong></td></tr>
+          {% empty %}<tr><td colspan="5">Sin pedidos aún.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+{{ graficas|json_script:"datos-graficas" }}
+{{ mapa_datos|json_script:"datos-mapa-panel" }}
+{% endblock %}
+{% block js_extra %}
+<script src="{% static 'vendor/chartjs/chart.umd.js' %}"></script>
+<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+<script>
+  window.OVILLITO_TIENDA = { lat: {{ TIENDA.latitud|stringformat:"f" }}, lng: {{ TIENDA.longitud|stringformat:"f" }}, nombre: "{{ TIENDA.nombre|escapejs }}" };
+  window.OVILLITO_ISOTIPO = "{% static 'img/isotipo.svg' %}";
+</script>
+<script src="{% static 'js/panel.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load static tienda_extras %}
+{% block titulo %}¿Qué tan cerca estás?{% endblock %}
+{% block css_extra %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-mantequilla">
+  <div>
+    <p class="eyebrow">Ubicación y mapa</p>
+    <h1>¿Qué tan cerca estás del taller?</h1>
+    <p>Captura tu ubicación con el GPS de tu dispositivo y te diremos la distancia hasta {{ TIENDA.nombre }}.</p>
+  </div>
+  <img src="{% figura 'bolso' %}" alt="">
+</div>
+
+<div class="dos-columnas">
+  <div>
+    <div class="mapa" id="mapa" role="region" aria-label="Mapa con la tienda y tu ubicación"></div>
+    <p class="texto-mini" style="margin-top:.5rem">¿El GPS no funciona? Haz clic en el mapa para marcar tu ubicación manualmente.</p>
+  </div>
+
+  <div>
+    <div class="distancia" data-panel-distancia>
+      <p class="eyebrow" style="margin:0">Distancia en línea recta</p>
+      <p class="distancia__valor" data-distancia>{% if resumen %}{{ resumen.distancia_texto }}{% else %}— km{% endif %}</p>
+      <p class="distancia__mensaje" data-mensaje>{% if resumen %}{{ resumen.mensaje }}{% else %}Aún no conocemos tu ubicación.{% endif %}</p>
+    </div>
+
+    <div class="tiempos" aria-label="Tiempo estimado de llegada">
+      <div><strong data-min-caminando>{% if resumen %}{{ resumen.minutos.caminando }}{% else %}—{% endif %}</strong>min caminando</div>
+      <div><strong data-min-bicicleta>{% if resumen %}{{ resumen.minutos.bicicleta }}{% else %}—{% endif %}</strong>min en bici</div>
+      <div><strong data-min-carro>{% if resumen %}{{ resumen.minutos.carro }}{% else %}—{% endif %}</strong>min en carro</div>
+    </div>
+
+    <button class="boton boton--bloque" type="button" data-capturar data-url="{% url 'actividades:ubicacion_guardar' %}">
+      {% icono 'objetivo' %} Capturar mi ubicación
+    </button>
+    <a class="boton boton--contorno boton--bloque" style="margin-top:.6rem" target="_blank" rel="noopener" data-ruta
+       href="https://www.google.com/maps/dir/?api=1&destination={{ TIENDA.latitud }},{{ TIENDA.longitud }}">
+      {% icono 'externo' %} Cómo llegar (Google Maps)
+    </a>
+    <div class="estado-geo" data-estado role="status">{% icono 'pin' %}<span>{% if ultima %}Última captura: {{ ultima.creada|date:"d/m/Y H:i" }} ({{ ultima.get_origen_display|lower }}{% if ultima.precision_m %}, ±{{ ultima.precision_m|floatformat:0 }} m{% endif %}).{% else %}Tu navegador te pedirá permiso para usar la ubicación.{% endif %}</span></div>
+
+    <div class="tarjeta" style="margin-top:1rem">
+      <h2 class="tarjeta__titulo">{% icono 'tienda' %} Nuestro taller</h2>
+      <ul class="lista-simple">
+        <li><span>Dirección</span><strong style="text-align:right">{{ TIENDA.direccion }}</strong></li>
+        <li><span>Horario</span><strong>{{ TIENDA.horario }}</strong></li>
+        <li><span>Coordenadas</span><strong>{{ TIENDA.latitud|floatformat:4 }}, {{ TIENDA.longitud|floatformat:4 }}</strong></li>
+      </ul>
+    </div>
+
+    {% if historial %}
+    <div class="tarjeta">
+      <h2 class="tarjeta__titulo">{% icono 'reloj' %} Tus últimas capturas</h2>
+      <ul class="lista-simple" data-historial>
+        {% for u in historial %}<li><span>{{ u.creada|date:"d/m H:i" }} · {{ u.get_origen_display }}</span><strong>{{ u.distancia_km|km }}</strong></li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{{ mapa_datos|json_script:"datos-mapa" }}
+{% endblock %}
+{% block js_extra %}
+<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+<script>window.OVILLITO_ISOTIPO = "{% static 'img/isotipo.svg' %}";</script>
+<script src="{% static 'js/ubicacion.js' %}"></script>
+{% endblock %}

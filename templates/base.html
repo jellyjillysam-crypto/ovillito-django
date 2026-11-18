@@ -1,0 +1,168 @@
+{% extends "_esqueleto.html" %}
+{% load static tienda_extras %}
+{% block cuerpo %}
+<a class="sr-only" href="#contenido">Saltar al contenido</a>
+{% include "includes/marquesina.html" %}
+
+{% with ruta=request.resolver_match.view_name %}
+<header class="cabecera">
+  <div class="contenedor">
+    <nav class="nav" aria-label="Principal">
+      <button class="boton-icono nav__hamburguesa" type="button" data-alternar="menu-principal" aria-expanded="false" aria-controls="menu-principal" aria-label="Abrir menú">
+        {% icono 'menu' %}
+      </button>
+
+      <div class="nav__principal" id="menu-principal">
+        <div class="nav__cabecera-movil">
+          <span class="logo__texto" style="font-size:1.4rem">{{ MARCA.nombre }}</span>
+          <button class="cerrar" type="button" data-cerrar-menu aria-label="Cerrar menú">{% icono 'cerrar' %}</button>
+        </div>
+        <ul class="nav__menu">
+          <li>
+            <button class="nav__enlace" type="button" data-desplegar="menu-tienda" aria-expanded="false" {% if ruta == 'tienda:home' %}aria-current="page"{% endif %}>
+              Tienda {% icono 'abajo' %}
+            </button>
+            <div class="desplegable" id="menu-tienda">
+              <a href="{% url 'tienda:home' %}#catalogo">{% icono 'tienda' %} Todo el catálogo</a>
+              <hr>
+              <p class="desplegable__titulo">Categorías</p>
+              {% for c in menu_categorias %}
+              <a href="{% url 'tienda:home' %}?categoria={{ c.slug }}#catalogo">{{ c.nombre }}</a>
+              {% endfor %}
+            </div>
+          </li>
+          <li><a class="nav__enlace" href="{% url 'identidad' %}" {% if ruta == 'identidad' %}aria-current="page"{% endif %}>Nuestra marca</a></li>
+          <li><a class="nav__enlace" href="{% url 'actividades:blog' %}" {% if ruta == 'actividades:blog' or ruta == 'actividades:blog_detalle' %}aria-current="page"{% endif %}>Blog</a></li>
+          <li>
+            <button class="nav__enlace" type="button" data-desplegar="menu-comunidad" aria-expanded="false">
+              Comunidad {% icono 'abajo' %}
+            </button>
+            <div class="desplegable" id="menu-comunidad">
+              <a href="{% url 'actividades:ubicacion' %}">{% icono 'pin' %}<span>Mapa de la tienda<small>¿Qué tan cerca estás?</small></span></a>
+              <a href="{% url 'actividades:chat' %}">{% icono 'chat' %}<span>Chat<small>Habla con la comunidad</small></span></a>
+              <a href="{% url 'actividades:videos' %}">{% icono 'video' %}<span>Videos<small>Tutoriales y más</small></span></a>
+              <a href="{% url 'actividades:encuesta' %}">{% icono 'encuesta' %}<span>Encuesta<small>Cuéntanos tu opinión</small></span></a>
+              <a href="{% url 'actividades:fotos' %}">{% icono 'camara' %}<span>Fotos<small>Comparte tus creaciones</small></span></a>
+            </div>
+          </li>
+          {% if es_admin %}
+          <li><a class="nav__enlace" href="{% url 'panel:dashboard' %}">{% icono 'admin' %} Panel</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <a class="logo" href="{% url 'inicio' %}" aria-label="{{ MARCA.nombre }} — inicio">
+        <img src="{% static 'img/isotipo.svg' %}" alt="" width="40" height="40">
+        <span class="logo__texto">{{ MARCA.nombre }}</span>
+      </a>
+
+      <div class="nav__acciones">
+        <button class="boton-icono boton-icono--ocultable" type="button" data-alternar="buscador" aria-expanded="false" aria-controls="buscador" aria-label="Buscar productos">{% icono 'buscar' %}</button>
+        <div style="position:relative">
+          <button class="boton-icono" type="button" data-desplegar="menu-usuario" aria-expanded="false" aria-label="Mi cuenta">{% icono 'usuario' %}</button>
+          <div class="desplegable desplegable--derecha" id="menu-usuario">
+            <p class="desplegable__titulo">Hola, {{ user.first_name|default:user.username }}</p>
+            <a href="{% url 'tienda:mis_pedidos' %}">{% icono 'recibo' %} Mis pedidos</a>
+            <a href="{% url 'actividades:fotos' %}">{% icono 'camara' %} Mis fotos</a>
+            <a href="{% url 'actividades:encuesta' %}">{% icono 'encuesta' %} Mi encuesta</a>
+            <hr>
+            <form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}
+              <button type="submit">{% icono 'salir' %} Cerrar sesión</button>
+            </form>
+          </div>
+        </div>
+        <button class="boton-icono" type="button" data-abrir-carrito aria-label="Abrir carrito" aria-controls="carrito">
+          {% icono 'bolsa' %}
+          <span class="contador" data-contador-carrito data-vacio="{% if carrito_cantidad %}false{% else %}true{% endif %}">{{ carrito_cantidad|default:0 }}</span>
+        </button>
+        <span class="pildora-moneda" title="Idioma y moneda">ES · {{ TIENDA.moneda }}</span>
+      </div>
+    </nav>
+
+    <div class="buscador" id="buscador">
+      <form method="get" action="{% url 'tienda:home' %}" role="search">
+        <label class="sr-only" for="q">Buscar</label>
+        <input type="search" id="q" name="q" placeholder="Busca amigurumis, bolsos, mantas…" value="{{ q|default:'' }}">
+        <button class="boton boton--s" type="submit">Buscar</button>
+      </form>
+    </div>
+  </div>
+</header>
+{% endwith %}
+
+<main id="contenido" class="contenedor pagina">
+  {% include "includes/mensajes.html" %}
+  {% block contenido %}{% endblock %}
+</main>
+
+<footer class="pie">
+  <div class="contenedor">
+    <div class="pie__grilla">
+      <div>
+        <div class="pie__logo"><img src="{% static 'img/isotipo.svg' %}" alt=""><span>{{ MARCA.nombre }}</span></div>
+        <p class="pie__slogan">{{ MARCA.slogan }}</p>
+        <p style="opacity:.85;font-size:.92rem">{{ MARCA.descripcion }} Cada pieza nace en nuestro taller, puntada a puntada.</p>
+      </div>
+      <div>
+        <h4>Tienda</h4>
+        <ul>
+          {% for c in menu_categorias %}<li><a href="{% url 'tienda:home' %}?categoria={{ c.slug }}#catalogo">{{ c.nombre }}</a></li>{% endfor %}
+        </ul>
+      </div>
+      <div>
+        <h4>Comunidad</h4>
+        <ul>
+          <li><a href="{% url 'actividades:blog' %}">Blog</a></li>
+          <li><a href="{% url 'actividades:chat' %}">Chat</a></li>
+          <li><a href="{% url 'actividades:videos' %}">Videos</a></li>
+          <li><a href="{% url 'actividades:encuesta' %}">Encuesta</a></li>
+          <li><a href="{% url 'actividades:fotos' %}">Fotos</a></li>
+          <li><a href="{% url 'identidad' %}">Nuestra marca</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Visítanos</h4>
+        <ul>
+          <li>{{ TIENDA.direccion }}</li>
+          <li>{{ TIENDA.horario }}</li>
+          <li>{{ TIENDA.telefono }}</li>
+          <li><a href="{% url 'actividades:ubicacion' %}">¿Qué tan cerca estás? →</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="pie__legal">
+      <span>© {% now "Y" %} {{ MARCA.nombre }} · Hecho con amor y mucho hilo.</span>
+      <span>Proyecto académico desarrollado con Django.</span>
+    </div>
+  </div>
+</footer>
+
+{# --- Carrito lateral --- #}
+<div class="velo" data-velo></div>
+<aside class="carrito" id="carrito" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo" aria-hidden="true"
+       data-api="{% url 'tienda:carrito_api' %}"
+       data-url-agregar="{% url 'tienda:carrito_agregar' 0 %}"
+       data-url-actualizar="{% url 'tienda:carrito_actualizar' 0 %}"
+       data-url-eliminar="{% url 'tienda:carrito_eliminar' 0 %}"
+       data-url-nota="{% url 'tienda:carrito_nota' %}"
+       data-vacio-img="{% static 'img/figuras/oso.svg' %}" inert>
+  <div class="carrito__cabecera">
+    <h2 class="carrito__titulo" id="carrito-titulo">Tu carrito <span class="burbuja" data-carrito-cantidad>0</span></h2>
+    <button class="cerrar" type="button" data-cerrar-carrito aria-label="Cerrar carrito">{% icono 'cerrar' %}</button>
+  </div>
+  <div class="carrito__envio" data-carrito-envio>Envío gratis en pedidos desde {{ TIENDA.envio_gratis_desde|pesos }}</div>
+  <div class="carrito__items" data-carrito-items aria-live="polite"></div>
+  <form class="carrito__pie" data-carrito-pie method="post" action="{% url 'tienda:checkout' %}">
+    {% csrf_token %}
+    <details class="nota">
+      <summary>Agregar nota al pedido {% icono 'abajo' %}</summary>
+      <label class="sr-only" for="nota-carrito">Nota al pedido</label>
+      <textarea id="nota-carrito" name="nota" data-carrito-nota maxlength="500" placeholder="¿Colores especiales? ¿Es un regalo? Cuéntanos…"></textarea>
+    </details>
+    <a class="boton boton--contorno boton--bloque" href="{% url 'tienda:carrito' %}" data-ver-carrito>Ver carrito (0)</a>
+    <button class="boton boton--bloque" type="submit" data-pagar>Pagar</button>
+    <p class="carrito__legal">Impuestos incluidos. El envío se calcula al pagar.</p>
+    <a class="enlace-flecha carrito__seguir" href="#" data-cerrar-carrito>Seguir comprando {% icono 'flecha' %}</a>
+  </form>
+</aside>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}Pedidos{% endblock %}
+{% block encabezado %}Pedidos{% endblock %}
+{% block bajada %}<p>Consulta los pedidos y actualiza su estado de preparación.</p>{% endblock %}
+{% block contenido %}
+<div class="chips" style="margin:0 0 1rem">
+  <a class="chip" href="{% url 'panel:pedidos' %}" {% if not estado %}style="background:var(--mantequilla);border-color:var(--chocolate)"{% endif %}>Todos</a>
+  {% for clave, etiqueta in estados %}<a class="chip" href="?estado={{ clave }}" {% if estado == clave %}style="background:var(--mantequilla);border-color:var(--chocolate)"{% endif %}>{{ etiqueta }}</a>{% endfor %}
+</div>
+<div class="tabla-envoltura">
+  <table class="tabla">
+    <thead><tr><th>Pedido</th><th>Cliente</th><th>Fecha</th><th>Productos</th><th class="num">Total</th><th>Estado</th></tr></thead>
+    <tbody>
+      {% for p in pedidos %}
+      <tr>
+        <td><a href="{% url 'tienda:pedido' p.pk %}"><strong>{{ p.numero }}</strong></a></td>
+        <td>{{ p.usuario.get_full_name|default:p.usuario.username }}</td>
+        <td>{{ p.creado|date:"d/m/Y H:i" }}</td>
+        <td style="min-width:220px">{% for i in p.items.all %}{{ i.cantidad }} × {{ i.nombre }}{% if not forloop.last %}<br>{% endif %}{% endfor %}{% if p.nota %}<br><span class="texto-mini">Nota: {{ p.nota|truncatechars:60 }}</span>{% endif %}</td>
+        <td class="num"><strong>{{ p.total|pesos }}</strong></td>
+        <td>
+          <form method="post" action="{% url 'panel:pedido_estado' p.pk %}" style="display:flex;gap:.3rem">
+            {% csrf_token %}
+            <input type="hidden" name="volver" value="{{ request.get_full_path }}">
+            <label class="sr-only" for="estado-{{ p.pk }}">Estado de {{ p.numero }}</label>
+            <select id="estado-{{ p.pk }}" name="estado" style="min-height:36px;padding:.3rem .6rem;font-size:.85rem;width:auto">
+              {% for clave, etiqueta in estados %}<option value="{{ clave }}" {% if p.estado == clave %}selected{% endif %}>{{ etiqueta }}</option>{% endfor %}
+            </select>
+            <button class="boton boton--s" type="submit">Guardar</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:2rem">No hay pedidos.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

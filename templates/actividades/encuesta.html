@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Encuesta{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-menta">
+  <div>
+    <p class="eyebrow">Encuesta de satisfacción</p>
+    <h1>{% if existente %}¡Gracias por tu opinión!{% else %}Tu opinión teje la próxima colección{% endif %}</h1>
+    <p>{% if existente %}Ya respondiste el {{ existente.creada|date:"d/m/Y" }}. Puedes actualizar tus respuestas cuando quieras.{% else %}Son solo 5 preguntas y nos ayudan muchísimo.{% endif %}</p>
+  </div>
+  <img src="{% figura 'cactus' %}" alt="">
+</div>
+
+<div class="dos-columnas">
+  <form class="tarjeta" method="post" novalidate>
+    {% csrf_token %}
+    {% if form.errors %}<ul class="mensajes"><li class="mensaje mensaje--error">{% icono 'cerrar' %}<span>Revisa las preguntas marcadas en rojo.</span></li></ul>{% endif %}
+
+    <fieldset class="pregunta" style="border:0;margin:0;padding-inline:0">
+      <legend class="pregunta__titulo">1. {{ form.calificacion.label }}</legend>
+      <div class="estrellas">
+        {% for opcion in form.calificacion.subwidgets reversed %}
+        <label title="{{ opcion.choice_label }} de 5">{{ opcion.tag }}<img src="{% static 'img/isotipo.svg' %}" alt=""><span>{{ opcion.choice_label }}</span><span class="sr-only"> de 5</span></label>
+        {% endfor %}
+      </div>
+      <p class="texto-mini" style="margin:1.6rem 0 0">1 = nada feliz · 5 = ¡me encanta!</p>
+      {% for e in form.calificacion.errors %}<p class="campo__error">{{ e }}</p>{% endfor %}
+    </fieldset>
+
+    <div class="pregunta">
+      <label class="pregunta__titulo" for="{{ form.categoria_favorita.id_for_label }}">2. {{ form.categoria_favorita.label }}</label>
+      {{ form.categoria_favorita }}
+      {% for e in form.categoria_favorita.errors %}<p class="campo__error">{{ e }}</p>{% endfor %}
+    </div>
+
+    <fieldset class="pregunta" style="border:0;margin:0;padding-inline:0">
+      <legend class="pregunta__titulo">3. {{ form.canal.label }}</legend>
+      <div class="opciones">{% for opcion in form.canal %}<label>{{ opcion.tag }} {{ opcion.choice_label }}</label>{% endfor %}</div>
+      {% for e in form.canal.errors %}<p class="campo__error">{{ e }}</p>{% endfor %}
+    </fieldset>
+
+    <fieldset class="pregunta" style="border:0;margin:0;padding-inline:0">
+      <legend class="pregunta__titulo">4. {{ form.recomendaria.label }}</legend>
+      <div class="opciones">{% for opcion in form.recomendaria %}<label>{{ opcion.tag }} {{ opcion.choice_label }}</label>{% endfor %}</div>
+      {% for e in form.recomendaria.errors %}<p class="campo__error">{{ e }}</p>{% endfor %}
+    </fieldset>
+
+    <div class="pregunta">
+      <label class="pregunta__titulo" for="{{ form.comentario.id_for_label }}">5. {{ form.comentario.label }}</label>
+      {{ form.comentario }}
+    </div>
+
+    <button class="boton" type="submit">{% icono 'enviar' %} {% if existente %}Actualizar respuestas{% else %}Enviar encuesta{% endif %}</button>
+  </form>
+
+  <aside class="resumen-encuesta">
+    <div class="tarjeta">
+      <h2 class="tarjeta__titulo">{% icono 'grafica' %} Lo que dice la comunidad</h2>
+      <div class="resumen-encuesta">
+        <div class="cifra"><strong>{{ promedio|floatformat:1 }} / 5</strong><span>Calificación promedio</span></div>
+        <div class="cifra"><strong>{{ porcentaje_recomiendan }} %</strong><span>Nos recomendaría con seguridad</span></div>
+        <div class="cifra"><strong>{{ total }}</strong><span>Respuesta{{ total|pluralize }} recibida{{ total|pluralize }}</span></div>
+      </div>
+    </div>
+    <div class="tarjeta fondo-mantequilla">
+      <p style="margin:0;font-weight:700">Las respuestas son anónimas para la comunidad; solo el equipo {{ MARCA.nombre }} las ve en su panel.</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}

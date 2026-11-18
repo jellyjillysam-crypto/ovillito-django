@@ -1,0 +1,28 @@
+{% extends "panel/base_panel.html" %}
+{% load tienda_extras %}
+{% block titulo %}{{ titulo }}{% endblock %}
+{% block bajada %}<p>Completa los campos y guarda los cambios. Los campos con * son obligatorios.</p>{% endblock %}
+{% block acciones %}{% if volver_url %}<a class="boton boton--s boton--contorno" href="{{ volver_url }}">{% icono 'flecha-izq' 'icono--s' %} Volver</a>{% endif %}{% endblock %}
+{% block contenido %}
+<form class="tarjeta formulario-panel" method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+  <ul class="mensajes">{% for e in form.non_field_errors %}<li class="mensaje mensaje--error">{% icono 'cerrar' %}<span>{{ e }}</span></li>{% endfor %}</ul>
+  {% endif %}
+  <div class="formulario-grilla">
+    {% for campo in form %}
+      {% if campo.field.widget.input_type == 'checkbox' or campo.field.widget.input_type == 'number' or campo.name == 'categoria' or campo.name == 'ilustracion' or campo.name == 'nivel' or campo.name == 'duracion' %}
+        {% include "includes/campo.html" %}
+      {% else %}
+        {% include "includes/campo.html" with ancho=True %}
+      {% endif %}
+      {% if campo.name == 'colores' %}<div class="vista-colores campo--ancho" data-vista-colores aria-hidden="true" style="margin:-.6rem 0 1rem"></div>{% endif %}
+      {% if campo.name == 'imagen' and form.instance.pk and form.instance.imagen %}<img class="vista-imagen campo--ancho" src="{{ form.instance.imagen.url }}" alt="Imagen actual" style="margin:-.6rem 0 1rem">{% endif %}
+    {% endfor %}
+  </div>
+  <div class="acciones-form">
+    <button class="boton" type="submit">{% icono 'check' %} Guardar</button>
+    {% if volver_url %}<a class="boton boton--contorno" href="{{ volver_url }}">Cancelar</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

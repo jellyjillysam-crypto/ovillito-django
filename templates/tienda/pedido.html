@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load tienda_extras %}
+{% block titulo %}Pedido {{ pedido.numero }}{% endblock %}
+{% block contenido %}
+<div class="dos-columnas">
+  <div class="tarjeta confirmacion">
+    <img src="{% figura 'conejo' %}" alt="">
+    <p class="confirmacion__numero">{{ pedido.numero }}</p>
+    <h1>¡Gracias por tu pedido!</h1>
+    <p class="texto-suave">Ya estamos preparando tus tejidos con mucho cariño. Estado actual:
+      <span class="insignia insignia--amarilla">{{ pedido.get_estado_display }}</span></p>
+    <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+      <a class="boton" href="{% url 'tienda:home' %}">Seguir comprando</a>
+      <a class="boton boton--contorno" href="{% url 'tienda:mis_pedidos' %}">Ver mis pedidos</a>
+    </div>
+  </div>
+  <div class="tarjeta">
+    <h2 class="tarjeta__titulo">Detalle</h2>
+    <ul class="lista-simple">
+      {% for item in pedido.items.all %}
+      <li><span>{{ item.cantidad }} × {{ item.nombre }}</span><strong>{{ item.subtotal|pesos }}</strong></li>
+      {% endfor %}
+    </ul>
+    <div class="resumen" style="margin-top:1rem">
+      <div><span>Subtotal</span><strong>{{ pedido.subtotal|pesos }}</strong></div>
+      <div><span>Envío</span><strong>{% if pedido.envio %}{{ pedido.envio|pesos }}{% else %}Gratis{% endif %}</strong></div>
+      <div class="resumen__total"><span>Total</span><span>{{ pedido.total|pesos }}</span></div>
+    </div>
+    {% if pedido.nota %}<p class="estado-geo" style="margin-top:1rem">{% icono 'libro' %} <span><strong>Nota:</strong> {{ pedido.nota }}</span></p>{% endif %}
+    <p class="texto-mini" style="margin-top:1rem">Realizado el {{ pedido.creado|date:"d/m/Y H:i" }}</p>
+  </div>
+</div>
+{% endblock %}

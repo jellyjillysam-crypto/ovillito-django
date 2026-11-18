@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load tienda_extras %}
+{% block titulo %}{{ producto.nombre }}{% endblock %}
+{% block contenido %}
+<nav class="migas" aria-label="Ruta"><a href="{% url 'tienda:home' %}">Tienda</a> / <a href="{% url 'tienda:home' %}?categoria={{ producto.categoria.slug }}#catalogo">{{ producto.categoria }}</a> / {{ producto.nombre }}</nav>
+
+<div class="detalle">
+  <div class="detalle__imagen"><img src="{{ producto.imagen_url }}" alt="{{ producto.nombre }}" width="600" height="600"></div>
+  <div>
+    <p class="eyebrow">{{ producto.categoria }}</p>
+    <h1>{{ producto.nombre }}</h1>
+    <p class="detalle__precio">{{ producto.precio|pesos }} {{ TIENDA.moneda }}</p>
+    <p>{{ producto.descripcion|linebreaksbr }}</p>
+
+    {% with colores=producto.lista_colores %}{% if colores %}
+    <p class="campo__label" style="margin-bottom:.4rem">Colores de hilo disponibles</p>
+    <ul class="swatches swatches--grandes">{% for c in colores %}<li style="--c: {{ c }}" title="{{ c }}"></li>{% endfor %}</ul>
+    <p class="texto-mini">¿Quieres otro color? Escríbelo en la nota del pedido.</p>
+    {% endif %}{% endwith %}
+
+    <form class="detalle__compra" method="post" action="{% url 'tienda:carrito_agregar' producto.pk %}" data-form-agregar="{{ producto.pk }}">
+      {% csrf_token %}
+      {% if producto.disponible %}
+        <div class="cantidad" data-selector-cantidad>
+          <button type="button" data-paso="-1" aria-label="Quitar uno">{% icono 'menos' %}</button>
+          <label class="sr-only" for="cantidad">Cantidad</label>
+          <input id="cantidad" name="cantidad" type="number" value="1" min="1" max="{{ producto.stock }}" inputmode="numeric">
+          <button type="button" data-paso="1" aria-label="Agregar uno">{% icono 'mas' %}</button>
+        </div>
+        <button class="boton" type="submit">{% icono 'bolsa' %} Agregar al carrito</button>
+      {% else %}
+        <button class="boton" type="button" disabled>Agotado por ahora</button>
+      {% endif %}
+    </form>
+
+    <div class="detalle__datos">
+      <div>{% icono 'caja' %} {% if producto.disponible %}{{ producto.stock }} disponible{{ producto.stock|pluralize }} para envío inmediato{% else %}Lo tejemos por encargo: escríbenos al chat{% endif %}</div>
+      <div>{% icono 'camion' %} Envío gratis desde {{ TIENDA.envio_gratis_desde|pesos }}</div>
+      <div>{% icono 'corazon' %} Tejido a mano con hilo 100 % algodón</div>
+    </div>
+  </div>
+</div>
+
+{% if relacionados %}
+<section class="seccion">
+  <div class="seccion__cabecera"><h2>También te puede gustar</h2></div>
+  <div class="grilla" data-cols="4">
+    {% for p in relacionados %}{% include "includes/tarjeta_producto.html" %}{% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "_esqueleto.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Iniciar sesión{% endblock %}
+{% block clase_body %}acceso-body{% endblock %}
+{% block cuerpo %}
+{% include "includes/marquesina.html" %}
+<main class="acceso">
+  <div class="acceso__tarjeta">
+    <section class="acceso__arte" aria-label="{{ MARCA.nombre }}">
+      <div>
+        <a class="acceso__marca" href="{% url 'inicio' %}">
+          <img src="{% static 'img/isotipo.svg' %}" alt="">
+          <span>{{ MARCA.nombre }}</span>
+        </a>
+        <p class="acceso__saludo">¡Hola de nuevo!</p>
+        <p class="acceso__lema">{{ MARCA.slogan }} Amigurumis, bolsos y mantas tejidos a mano con hilo de algodón.</p>
+      </div>
+      <div class="acceso__figuras" aria-hidden="true">
+        <img src="{% figura 'kit' %}" alt="">
+        <img src="{% figura 'oso' %}" alt="">
+        <img src="{% figura 'conejo' %}" alt="">
+      </div>
+    </section>
+
+    <section class="acceso__formulario">
+      <p class="eyebrow">Bienvenida/o</p>
+      <h1>Inicia sesión</h1>
+      <p class="texto-suave" style="margin:0">Elige tu tipo de cuenta para entrar a tu espacio.</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <fieldset class="roles" style="border:0;margin-inline:0">
+          <legend class="sr-only">Ingresar como</legend>
+          {% for opcion in form.rol %}
+          <label>{{ opcion.tag }}
+            {% if opcion.data.value == 'admin' %}{% icono 'admin' %}{% else %}{% icono 'bolsa' %}{% endif %}
+            {{ opcion.choice_label }}
+          </label>
+          {% endfor %}
+        </fieldset>
+
+        {% if form.non_field_errors %}
+        <ul class="mensajes">{% for e in form.non_field_errors %}<li class="mensaje mensaje--error">{% icono 'cerrar' %}<span>{{ e }}</span></li>{% endfor %}</ul>
+        {% endif %}
+
+        {% include "includes/campo.html" with campo=form.username %}
+
+        <div class="campo{% if form.password.errors %} campo--invalido{% endif %}">
+          <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+          <div class="campo-clave">
+            {{ form.password }}
+            <button class="boton-icono" type="button" data-ver-clave="{{ form.password.id_for_label }}" aria-label="Mostrar contraseña">{% icono 'ojo' %}</button>
+          </div>
+          {% for e in form.password.errors %}<p class="campo__error">{{ e }}</p>{% endfor %}
+        </div>
+
+        <div class="acceso__fila">
+          <label class="campo--check" style="display:flex;gap:.5rem;align-items:center;font-weight:600">{{ form.recordarme }} Recordarme</label>
+          <span class="texto-mini">¿Olvidaste tu clave? Escríbenos al chat.</span>
+        </div>
+
+        <button class="boton boton--bloque" type="submit">Entrar {% icono 'flecha' %}</button>
+      </form>
+
+      <p class="acceso__alterno">¿Aún no tienes cuenta? <a href="{% url 'cuentas:registro' %}"><strong>Regístrate como cliente</strong></a></p>
+
+      {% if mostrar_demo %}
+      <div class="demo">
+        <strong>Cuentas de demostración</strong>
+        <ul>
+          <li>Administrador: <code>admin</code> / <code>Admin12345</code><button type="button" data-demo="admin" data-u="admin" data-p="Admin12345">Usar</button></li>
+          <li>Cliente: <code>cliente</code> / <code>Cliente12345</code><button type="button" data-demo="cliente" data-u="cliente" data-p="Cliente12345">Usar</button></li>
+        </ul>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</main>
+<p class="acceso-pie">{{ MARCA.nombre }} · {{ TIENDA.direccion }}</p>
+{% endblock %}

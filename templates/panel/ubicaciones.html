@@ -1,0 +1,45 @@
+{% extends "panel/base_panel.html" %}
+{% load static tienda_extras %}
+{% block titulo %}Ubicaciones{% endblock %}
+{% block css_extra %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block encabezado %}Ubicación de los clientes{% endblock %}
+{% block bajada %}<p>Distancia de cada cliente al taller según su última captura de ubicación.</p>{% endblock %}
+{% block contenido %}
+<div class="tablero">
+  <section class="grafica col-7" aria-label="Mapa">
+    <div class="mapa" id="mapa-panel" role="region" aria-label="Mapa con la tienda y los clientes"></div>
+  </section>
+  <section class="grafica col-5" aria-labelledby="t-cercanos">
+    <div class="grafica__cabecera"><div><h2 id="t-cercanos">Del más cercano al más lejano</h2></div></div>
+    <ul class="lista-panel">
+      {% for u in ultimas %}
+      <li><span class="avatar" aria-hidden="true">{{ u.usuario.first_name|default:u.usuario.username|first|upper }}</span>
+        <div class="lista-panel__texto"><strong>{{ u.usuario.get_full_name|default:u.usuario.username }}</strong><span>{{ u.creada|date:"d/m/Y H:i" }} · {{ u.get_origen_display }}</span></div>
+        <span class="num">{{ u.distancia_km|km }}</span></li>
+      {% empty %}<li class="texto-suave">Ningún cliente ha compartido su ubicación todavía.</li>{% endfor %}
+    </ul>
+  </section>
+  <section class="grafica col-12" aria-labelledby="t-registros">
+    <div class="grafica__cabecera"><div><h2 id="t-registros">Últimos 30 registros</h2></div></div>
+    <div class="tabla-envoltura" style="border:0">
+      <table class="tabla">
+        <thead><tr><th>Cliente</th><th>Fecha</th><th>Origen</th><th class="num">Latitud</th><th class="num">Longitud</th><th class="num">Precisión</th><th class="num">Distancia</th></tr></thead>
+        <tbody>
+          {% for u in registros %}
+          <tr><td>{{ u.usuario.get_full_name|default:u.usuario.username }}</td><td>{{ u.creada|date:"d/m/Y H:i" }}</td><td>{{ u.get_origen_display }}</td><td class="num">{{ u.latitud|floatformat:5 }}</td><td class="num">{{ u.longitud|floatformat:5 }}</td><td class="num">{% if u.precision_m %}± {{ u.precision_m|floatformat:0 }} m{% else %}—{% endif %}</td><td class="num"><strong>{{ u.distancia_km|km }}</strong></td></tr>
+          {% empty %}<tr><td colspan="7">Sin registros.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{{ mapa_datos|json_script:"datos-mapa-panel" }}
+{% endblock %}
+{% block js_extra %}
+<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+<script>
+  window.OVILLITO_TIENDA = { lat: {{ TIENDA.latitud|stringformat:"f" }}, lng: {{ TIENDA.longitud|stringformat:"f" }}, nombre: "{{ TIENDA.nombre|escapejs }}" };
+  window.OVILLITO_ISOTIPO = "{% static 'img/isotipo.svg' %}";
+</script>
+<script src="{% static 'js/panel.js' %}"></script>
+{% endblock %}

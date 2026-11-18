@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load tienda_extras %}
+{% block titulo %}Tu carrito{% endblock %}
+{% block contenido %}
+<div class="cabecera-pagina fondo-mantequilla">
+  <div>
+    <p class="eyebrow">Paso final</p>
+    <h1>Tu carrito</h1>
+    <p>Revisa tus tejidos, agrega una nota y confirma tu pedido.</p>
+  </div>
+  <img src="{% figura 'kit' %}" alt="">
+</div>
+
+{% if items %}
+<div class="dos-columnas">
+  <div class="tarjeta">
+    {% for item in items %}
+    <div class="item-carrito">
+      <img src="{{ item.producto.imagen_url }}" alt="">
+      <div>
+        <a class="item-carrito__nombre" href="{{ item.producto.get_absolute_url }}">{{ item.producto.nombre }}</a>
+        <div class="item-carrito__precio">{{ item.producto.precio|pesos }} c/u</div>
+        <div class="item-carrito__fila">
+          <form method="post" action="{% url 'tienda:carrito_actualizar' item.producto.pk %}" class="cantidad">
+            {% csrf_token %}
+            <label class="sr-only" for="c-{{ item.producto.pk }}">Cantidad</label>
+            <input id="c-{{ item.producto.pk }}" type="number" name="cantidad" min="0" max="{{ item.producto.stock }}" value="{{ item.cantidad }}" style="width:52px">
+            <button type="submit" aria-label="Actualizar cantidad">{% icono 'girar' 'icono--s' %}</button>
+          </form>
+          <form method="post" action="{% url 'tienda:carrito_eliminar' item.producto.pk %}">{% csrf_token %}
+            <button class="eliminar" type="submit">Eliminar</button>
+          </form>
+        </div>
+      </div>
+      <div class="item-carrito__total">{{ item.subtotal|pesos }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form class="tarjeta" method="post" action="{% url 'tienda:checkout' %}">
+    {% csrf_token %}
+    <h2 class="tarjeta__titulo">Resumen</h2>
+    <div class="resumen">
+      <div><span>Subtotal</span><strong>{{ subtotal|pesos }}</strong></div>
+      <div><span>Envío</span><strong>{% if envio %}{{ envio|pesos }}{% else %}Gratis{% endif %}</strong></div>
+      {% if falta_envio_gratis %}<p class="texto-mini" style="margin:0">Te faltan {{ falta_envio_gratis|pesos }} para el envío gratis.</p>{% endif %}
+      <div class="resumen__total"><span>Total</span><span>{{ total|pesos }}</span></div>
+    </div>
+    <div class="campo" style="margin-top:1rem">
+      <label for="nota">Nota para el pedido</label>
+      <textarea id="nota" name="nota" maxlength="500" placeholder="Colores, dedicatoria, fecha especial…">{{ nota }}</textarea>
+    </div>
+    <button class="boton boton--bloque" type="submit">Confirmar pedido · {{ total|pesos }}</button>
+    <p class="carrito__legal" style="margin-top:.6rem">Pedido de demostración: no se realiza ningún cobro real.</p>
+  </form>
+</div>
+{% else %}
+<div class="vacio">
+  <img src="{% figura 'oso' %}" alt="">
+  <h2>Tu carrito está vacío</h2>
+  <p class="texto-suave">Nuestros amigurumis están esperando un hogar.</p>
+  <a class="boton" href="{% url 'tienda:home' %}#catalogo">Ir a la tienda</a>
+</div>
+{% endif %}
+{% endblock %}
