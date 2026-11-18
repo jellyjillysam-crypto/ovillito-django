@@ -9,8 +9,8 @@ class FlujoDeAccesoTests(TestCase):
         cls.admin = User.objects.create_user("admin", password="Admin12345", is_staff=True)
         cls.cliente = User.objects.create_user("cliente", password="Cliente12345", first_name="Camila")
 
-    def _login(self, usuario, clave, rol):
-        return self.client.post(reverse("cuentas:login"), {"username": usuario, "password": clave, "rol": rol})
+    def _login(self, usuario, clave, rol=None):
+        return self.client.post(reverse("cuentas:login"), {"username": usuario, "password": clave})
 
     def test_la_raiz_lleva_al_catalogo_si_no_hay_sesion(self):
         respuesta = self.client.get("/")
@@ -38,24 +38,13 @@ class FlujoDeAccesoTests(TestCase):
         respuesta = self._login("admin", "Admin12345", "admin")
         self.assertRedirects(respuesta, reverse("panel:dashboard"))
 
-    def test_cliente_no_puede_entrar_como_administrador(self):
-        respuesta = self._login("cliente", "Cliente12345", "admin")
-        self.assertEqual(respuesta.status_code, 200)
-        self.assertContains(respuesta, "no tiene permisos de administrador")
-        self.assertNotIn("_auth_user_id", self.client.session)
-
-    def test_admin_debe_elegir_el_rol_administrador(self):
-        respuesta = self._login("admin", "Admin12345", "cliente")
-        self.assertContains(respuesta, "cuenta de administrador")
-        self.assertNotIn("_auth_user_id", self.client.session)
-
     def test_credenciales_incorrectas(self):
         respuesta = self._login("cliente", "mala", "cliente")
         self.assertContains(respuesta, "Usuario o contraseña incorrectos")
 
     def test_next_externo_es_ignorado(self):
         respuesta = self.client.post(reverse("cuentas:login") + "?next=https://malicioso.com/",
-                                     {"username": "cliente", "password": "Cliente12345", "rol": "cliente",
+                                     {"username": "cliente", "password": "Cliente12345",
                                       "next": "https://malicioso.com/"})
         self.assertRedirects(respuesta, reverse("tienda:home"))
 
@@ -93,7 +82,7 @@ class CorreosAdminTests(TestCase):
 
     def test_login_retira_admin_si_ya_no_esta_en_la_lista(self):
         User.objects.create_user("vieja", email="vieja@correo.com", password="Clave12345", is_staff=True)
-        self.client.post(reverse("cuentas:login"), {"username": "vieja", "password": "Clave12345", "rol": "cliente"})
+        self.client.post(reverse("cuentas:login"), {"username": "vieja", "password": "Clave12345"})
         self.assertFalse(User.objects.get(username="vieja").is_staff)
 
 

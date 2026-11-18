@@ -25,21 +25,11 @@
     <section class="acceso__formulario">
       <p class="eyebrow">Bienvenida/o</p>
       <h1>Inicia sesión</h1>
-      <p class="texto-suave" style="margin:0">Elige tu tipo de cuenta para entrar a tu espacio.</p>
+      <p class="texto-suave" style="margin:0">Entra con tu usuario y contraseña.</p>
 
       <form method="post" novalidate>
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ next }}">
-
-        <fieldset class="roles" style="border:0;margin-inline:0">
-          <legend class="sr-only">Ingresar como</legend>
-          {% for opcion in form.rol %}
-          <label>{{ opcion.tag }}
-            {% if opcion.data.value == 'admin' %}{% icono 'admin' %}{% else %}{% icono 'bolsa' %}{% endif %}
-            {{ opcion.choice_label }}
-          </label>
-          {% endfor %}
-        </fieldset>
 
         {% if form.non_field_errors %}
         <ul class="mensajes">{% for e in form.non_field_errors %}<li class="mensaje mensaje--error">{% icono 'cerrar' %}<span>{{ e }}</span></li>{% endfor %}</ul>

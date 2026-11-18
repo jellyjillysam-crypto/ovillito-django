@@ -2,18 +2,10 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 
-from .permisos import ROL_ADMIN, ROL_CLIENTE
-
 
 class LoginForm(AuthenticationForm):
-    """Login con selector de tipo de usuario (cliente / administrador)."""
+    """Login único: el rol (cliente o administradora) se detecta por la cuenta."""
 
-    rol = forms.ChoiceField(
-        choices=[(ROL_CLIENTE, "Cliente"), (ROL_ADMIN, "Administrador")],
-        initial=ROL_CLIENTE,
-        widget=forms.RadioSelect,
-        label="Ingresar como",
-    )
     recordarme = forms.BooleanField(required=False, initial=True, label="Recordarme")
 
     def __init__(self, *args, **kwargs):

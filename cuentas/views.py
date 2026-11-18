@@ -6,7 +6,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import LoginForm, RegistroForm
-from .permisos import ROL_ADMIN, ROL_CLIENTE, es_admin, home_por_rol, sincronizar_admin
+from .permisos import home_por_rol, sincronizar_admin
 
 
 def inicio(request):
@@ -29,24 +29,17 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect(home_por_rol(request.user))
 
-    rol_inicial = request.GET.get("rol") if request.GET.get("rol") in (ROL_ADMIN, ROL_CLIENTE) else ROL_CLIENTE
-    form = LoginForm(request, data=request.POST or None, initial={"rol": rol_inicial})
+    form = LoginForm(request, data=request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         usuario = form.get_user()
         sincronizar_admin(usuario)
-        rol = form.cleaned_data["rol"]
-        if rol == ROL_ADMIN and not es_admin(usuario):
-            form.add_error(None, "Esta cuenta no tiene permisos de administrador. Selecciona «Cliente».")
-        elif rol == ROL_CLIENTE and es_admin(usuario):
-            form.add_error(None, "Esta es una cuenta de administrador. Selecciona «Administrador».")
-        else:
-            login(request, usuario)
-            if not form.cleaned_data.get("recordarme"):
-                request.session.set_expiry(0)  # la sesión termina al cerrar el navegador
-            nombre = usuario.first_name or usuario.username
-            messages.success(request, f"¡Hola, {nombre}! Qué gusto verte de nuevo.")
-            return redirect(_destino_seguro(request, usuario))
+        login(request, usuario)
+        if not form.cleaned_data.get("recordarme"):
+            request.session.set_expiry(0)  # la sesión termina al cerrar el navegador
+        nombre = usuario.first_name or usuario.username
+        messages.success(request, f"¡Hola, {nombre}! Qué gusto verte de nuevo.")
+        return redirect(_destino_seguro(request, usuario))
 
     return render(request, "cuentas/login.html", {
         "form": form,
