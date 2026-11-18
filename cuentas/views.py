@@ -6,13 +6,13 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from .forms import LoginForm, RegistroForm
-from .permisos import ROL_ADMIN, ROL_CLIENTE, es_admin, home_por_rol
+from .permisos import ROL_ADMIN, ROL_CLIENTE, es_admin, home_por_rol, sincronizar_admin
 
 
 def inicio(request):
-    """Entrada del sitio: primero el login; después, el home según el rol."""
+    """Entrada del sitio: el catálogo es público; con sesión, el home según el rol."""
     if not request.user.is_authenticated:
-        return redirect("cuentas:login")
+        return redirect("tienda:home")
     return redirect(home_por_rol(request.user))
 
 
@@ -34,6 +34,7 @@ def login_view(request):
 
     if request.method == "POST" and form.is_valid():
         usuario = form.get_user()
+        sincronizar_admin(usuario)
         rol = form.cleaned_data["rol"]
         if rol == ROL_ADMIN and not es_admin(usuario):
             form.add_error(None, "Esta cuenta no tiene permisos de administrador. Selecciona «Cliente».")
@@ -60,14 +61,15 @@ def registro(request):
     form = RegistroForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         usuario = form.save()
+        sincronizar_admin(usuario)
         login(request, usuario, backend="django.contrib.auth.backends.ModelBackend")
         messages.success(request, f"¡Bienvenida/o a Ovillito, {usuario.first_name}! Tu cuenta está lista.")
-        return redirect("tienda:home")
-    return render(request, "cuentas/registro.html", {"form": form})
+        return redirect(_destino_seguro(request, usuario))
+    return render(request, "cuentas/registro.html", {"form": form, "next": request.GET.get("next", "")})
 
 
 @require_POST
 def salir(request):
     logout(request)
     messages.info(request, "Cerraste sesión. ¡Vuelve pronto!")
-    return redirect("cuentas:login")
+    return redirect("tienda:home")

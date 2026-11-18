@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 
@@ -12,12 +12,19 @@ class FlujoDeAccesoTests(TestCase):
     def _login(self, usuario, clave, rol):
         return self.client.post(reverse("cuentas:login"), {"username": usuario, "password": clave, "rol": rol})
 
-    def test_la_raiz_lleva_al_login_si_no_hay_sesion(self):
+    def test_la_raiz_lleva_al_catalogo_si_no_hay_sesion(self):
         respuesta = self.client.get("/")
-        self.assertRedirects(respuesta, reverse("cuentas:login"))
+        self.assertRedirects(respuesta, reverse("tienda:home"))
+
+    def test_catalogo_es_publico(self):
+        self.assertEqual(self.client.get(reverse("tienda:home")).status_code, 200)
+
+    def test_checkout_sin_sesion_lleva_al_login(self):
+        respuesta = self.client.post(reverse("tienda:checkout"))
+        self.assertIn(reverse("cuentas:login"), respuesta["Location"])
 
     def test_las_paginas_internas_exigen_login(self):
-        for url in [reverse("tienda:home"), reverse("actividades:chat"), reverse("panel:dashboard")]:
+        for url in [reverse("actividades:chat"), reverse("panel:dashboard")]:
             respuesta = self.client.get(url)
             self.assertEqual(respuesta.status_code, 302)
             self.assertIn(reverse("cuentas:login"), respuesta["Location"])
@@ -64,7 +71,30 @@ class FlujoDeAccesoTests(TestCase):
     def test_salir_requiere_post(self):
         self.client.force_login(self.cliente)
         self.assertEqual(self.client.get(reverse("cuentas:salir")).status_code, 405)
-        self.assertRedirects(self.client.post(reverse("cuentas:salir")), reverse("cuentas:login"))
+        self.assertRedirects(self.client.post(reverse("cuentas:salir")), reverse("tienda:home"))
+
+
+@override_settings(ADMIN_EMAILS=["duena@correo.com"])
+class CorreosAdminTests(TestCase):
+    def _registrar(self, usuario, correo):
+        return self.client.post(reverse("cuentas:registro"), {
+            "first_name": "X", "username": usuario, "email": correo,
+            "password1": "TejerEsLindo2026", "password2": "TejerEsLindo2026",
+        })
+
+    def test_correo_de_la_lista_es_admin(self):
+        respuesta = self._registrar("duena", "Duena@Correo.com")
+        self.assertRedirects(respuesta, reverse("panel:dashboard"))
+        self.assertTrue(User.objects.get(username="duena").is_staff)
+
+    def test_otro_correo_es_cliente(self):
+        self._registrar("otra", "otra@correo.com")
+        self.assertFalse(User.objects.get(username="otra").is_staff)
+
+    def test_login_retira_admin_si_ya_no_esta_en_la_lista(self):
+        User.objects.create_user("vieja", email="vieja@correo.com", password="Clave12345", is_staff=True)
+        self.client.post(reverse("cuentas:login"), {"username": "vieja", "password": "Clave12345", "rol": "cliente"})
+        self.assertFalse(User.objects.get(username="vieja").is_staff)
 
 
 class PermisosPorRolTests(TestCase):

@@ -12,8 +12,8 @@ def global_tienda(request):
         "TIENDA": settings.TIENDA,
         "es_admin": es_admin(getattr(request, "user", None)),
     }
-    if getattr(request, "user", None) and request.user.is_authenticated:
-        carrito = request.session.get("carrito") or {}
-        contexto["carrito_cantidad"] = sum(int(c) for c in carrito.values()) if isinstance(carrito, dict) else 0
-        contexto["menu_categorias"] = Categoria.objects.all()
+    carrito = request.session.get("carrito") if hasattr(request, "session") else None
+    carrito = carrito or {}
+    contexto["carrito_cantidad"] = sum(int(c) for c in carrito.values()) if isinstance(carrito, dict) else 0
+    contexto["menu_categorias"] = Categoria.objects.all()
     return contexto

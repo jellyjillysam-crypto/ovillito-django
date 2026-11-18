@@ -10,6 +10,7 @@ from functools import wraps
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.conf import settings
 from django.shortcuts import resolve_url
 
 ROL_ADMIN = "admin"
@@ -18,6 +19,24 @@ ROL_CLIENTE = "cliente"
 
 def es_admin(usuario):
     return bool(usuario and usuario.is_authenticated and usuario.is_staff)
+
+
+def correo_es_admin(correo):
+    return bool(correo) and correo.strip().lower() in settings.ADMIN_EMAILS
+
+
+def sincronizar_admin(usuario):
+    """Otorga o retira el rol de administrador según la lista ADMIN_EMAILS.
+
+    Si la lista está vacía no se toca nada (así no se pierden admins creados
+    por consola). Los superusuarios nunca pierden el acceso.
+    """
+    if not settings.ADMIN_EMAILS or usuario.is_superuser:
+        return
+    debe = correo_es_admin(usuario.email)
+    if usuario.is_staff != debe:
+        usuario.is_staff = debe
+        usuario.save(update_fields=["is_staff"])
 
 
 def rol_de(usuario):

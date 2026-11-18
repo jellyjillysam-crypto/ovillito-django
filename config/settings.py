@@ -29,6 +29,10 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get(
 ).split(",") if h.strip()]
 
 
+# Correos que reciben el rol de administrador al registrarse o iniciar sesión.
+# En producción: variable ADMIN_EMAILS="uno@correo.com,otro@correo.com"
+ADMIN_EMAILS = [e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()]
+
 # Render expone el dominio público en esta variable.
 _render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 if _render_host:
@@ -131,7 +135,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # --- Autenticación ---------------------------------------------------------
 LOGIN_URL = "cuentas:login"
 LOGIN_REDIRECT_URL = "inicio"
-LOGOUT_REDIRECT_URL = "cuentas:login"
+LOGOUT_REDIRECT_URL = "tienda:home"
 
 MESSAGE_TAGS = {
     10: "info",      # DEBUG

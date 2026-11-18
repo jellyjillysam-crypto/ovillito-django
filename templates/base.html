@@ -61,6 +61,7 @@
         <div style="position:relative">
           <button class="boton-icono" type="button" data-desplegar="menu-usuario" aria-expanded="false" aria-label="Mi cuenta">{% icono 'usuario' %}</button>
           <div class="desplegable desplegable--derecha" id="menu-usuario">
+            {% if user.is_authenticated %}
             <p class="desplegable__titulo">Hola, {{ user.first_name|default:user.username }}</p>
             <a href="{% url 'tienda:mis_pedidos' %}">{% icono 'recibo' %} Mis pedidos</a>
             <a href="{% url 'actividades:fotos' %}">{% icono 'camara' %} Mis fotos</a>
@@ -69,6 +70,11 @@
             <form method="post" action="{% url 'cuentas:salir' %}">{% csrf_token %}
               <button type="submit">{% icono 'salir' %} Cerrar sesión</button>
             </form>
+            {% else %}
+            <p class="desplegable__titulo">Bienvenida/o</p>
+            <a href="{% url 'cuentas:login' %}">{% icono 'usuario' %} Iniciar sesión</a>
+            <a href="{% url 'cuentas:registro' %}">{% icono 'usuario' %} Crear cuenta</a>
+            {% endif %}
           </div>
         </div>
         <button class="boton-icono" type="button" data-abrir-carrito aria-label="Abrir carrito" aria-controls="carrito">

@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
@@ -57,7 +58,6 @@ def _leer_cantidad(request, defecto=1):
 
 
 # --- Home de clientes ------------------------------------------------------
-@login_required
 def home(request):
     productos = Producto.objects.activos().select_related("categoria").con_ventas()
 
@@ -105,7 +105,6 @@ def home(request):
     })
 
 
-@login_required
 def producto_detalle(request, slug):
     producto = get_object_or_404(Producto.objects.select_related("categoria"), slug=slug, activo=True)
     relacionados = (Producto.objects.activos().filter(categoria=producto.categoria)
@@ -114,12 +113,10 @@ def producto_detalle(request, slug):
 
 
 # --- Carrito (API JSON usada por el panel lateral) -------------------------
-@login_required
 def carrito_api(request):
     return JsonResponse(Carrito(request).como_json())
 
 
-@login_required
 @require_POST
 def carrito_agregar(request, producto_id):
     producto = get_object_or_404(Producto, pk=producto_id, activo=True)
@@ -143,7 +140,6 @@ def carrito_agregar(request, producto_id):
     return _volver(request)
 
 
-@login_required
 @require_POST
 def carrito_actualizar(request, producto_id):
     producto = get_object_or_404(Producto, pk=producto_id)
@@ -154,7 +150,6 @@ def carrito_actualizar(request, producto_id):
     return redirect("tienda:carrito")
 
 
-@login_required
 @require_POST
 def carrito_eliminar(request, producto_id):
     carrito = Carrito(request)
@@ -165,7 +160,6 @@ def carrito_eliminar(request, producto_id):
     return redirect("tienda:carrito")
 
 
-@login_required
 @require_POST
 def carrito_nota(request):
     carrito = Carrito(request)
@@ -173,7 +167,6 @@ def carrito_nota(request):
     return JsonResponse({"ok": True, "nota": carrito.nota})
 
 
-@login_required
 def carrito_pagina(request):
     carrito = Carrito(request)
     items = carrito.items()
@@ -189,9 +182,11 @@ def carrito_pagina(request):
     })
 
 
-@login_required
 @require_POST
 def checkout(request):
+    if not request.user.is_authenticated:
+        messages.info(request, "Inicia sesión o crea tu cuenta para terminar tu pedido. Tu carrito se conserva.")
+        return redirect(f"{reverse('cuentas:login')}?next={reverse('tienda:carrito')}")
     carrito = Carrito(request)
     if "nota" in request.POST:
         carrito.nota = request.POST.get("nota", "")
